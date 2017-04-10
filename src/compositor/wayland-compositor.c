@@ -95,7 +95,7 @@ static void surface_attach (struct wl_client *client, struct wl_resource *resour
 static void surface_damage (struct wl_client *client, struct wl_resource *resource, int32_t x, int32_t y, int32_t width, int32_t height) {
 	struct surface *surface = wl_resource_get_user_data (resource);
 	
-	clutter_wayland_surface_damage_buffer(surface->actor, surface->pending_buffer,
+	clutter_wayland_surface_damage_buffer((ClutterWaylandSurface*) surface->actor, surface->pending_buffer,
 										  x, y, width, height);
 	
 }
@@ -128,7 +128,7 @@ static void surface_commit (struct wl_client *client, struct wl_resource *resour
 	GError *error; 
 
 	ClutterActor *actor = surface->actor;
-	clutter_wayland_surface_attach_buffer(actor, surface->pending_buffer, &error);
+	clutter_wayland_surface_attach_buffer((ClutterWaylandSurface*) actor, surface->pending_buffer, &error);
 
 	if(surface->buffer != NULL)
 		wl_buffer_send_release (surface->buffer);
@@ -174,7 +174,7 @@ static void compositor_create_surface (struct wl_client *client, struct wl_resou
 	surface->frame_callback = NULL;
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
-	surface->actor = clutter_wayland_surface_new(surface->surface);
+	surface->actor = clutter_wayland_surface_new((struct wl_surface*) surface->surface);
 	clutter_actor_add_child(scroll, surface->actor);
 
 	wl_resource_set_implementation (surface->surface, &surface_interface, surface, &delete_surface);
@@ -681,7 +681,7 @@ int main () {
 	clutter_init(0, NULL);
 	stage = clutter_stage_new ();
 	/* clutter_stage_set_user_resizable(stage, TRUE); */
-	clutter_actor_show_all (stage);
+	clutter_actor_show(stage);
 
 	scroll = clutter_scroll_actor_new();
 	clutter_actor_add_child(stage,scroll);
