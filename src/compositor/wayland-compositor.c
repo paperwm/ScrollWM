@@ -8,7 +8,8 @@
 #include <glib.h>
 
 #include <wayland-server.h>
-#include "xdg-shell.h"
+#include "xdg-shell-unstable-v5-server-protocol.h"
+#include "xdg-shell-unstable-v6-server-protocol.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -303,6 +304,196 @@ static struct xdg_surface_interface my_xdg_surface_interface = {
 	&xdg_surface_set_minimized
 };
 
+
+void zxdg_surface_get_toplevel_impl(struct wl_client *client,
+						   struct wl_resource *resource,
+						   uint32_t id) {
+	
+}
+
+void zxdg_surface_ack_configure_impl(struct wl_client *client,
+							struct wl_resource *resource,
+							uint32_t serial) {
+	
+}
+
+void zxdg_surface_set_window_geometry_impl(struct wl_client *client,
+								  struct wl_resource *resource,
+								  int32_t x,
+								  int32_t y,
+								  int32_t width,
+								  int32_t height) {
+	
+}
+
+void zxdg_surface_get_popup_impl(struct wl_client *client,
+						struct wl_resource *resource,
+						uint32_t id,
+						struct wl_resource *parent,
+						struct wl_resource *positioner) {
+	
+}
+
+void zxdg_surface_destroy_impl(struct wl_client *client,
+					  struct wl_resource *resource) {
+	
+}
+
+static struct zxdg_surface_v6_interface zxdg_surface_v6_interface_impl = {
+	/**
+	 * destroy the xdg_surface
+	 *
+	 * Destroy the xdg_surface object. An xdg_surface must only be
+	 * destroyed after its role object has been destroyed.
+	 */
+	.destroy = zxdg_surface_destroy_impl,
+	/**
+	 * assign the xdg_toplevel surface role
+	 *
+	 * This creates an xdg_toplevel object for the given xdg_surface
+	 * and gives the associated wl_surface the xdg_toplevel role.
+	 *
+	 * See the documentation of xdg_toplevel for more details about
+	 * what an xdg_toplevel is and how it is used.
+	 */
+	.get_toplevel = zxdg_surface_get_toplevel_impl,
+	/**
+	 * assign the xdg_popup surface role
+	 *
+	 * This creates an xdg_popup object for the given xdg_surface and
+	 * gives the associated wl_surface the xdg_popup role.
+	 *
+	 * See the documentation of xdg_popup for more details about what
+	 * an xdg_popup is and how it is used.
+	 */
+	.get_popup = zxdg_surface_get_popup_impl,
+	/**
+	 * set the new window geometry
+	 *
+	 * The window geometry of a surface is its "visible bounds" from
+	 * the user's perspective. Client-side decorations often have
+	 * invisible portions like drop-shadows which should be ignored for
+	 * the purposes of aligning, placing and constraining windows.
+	 *
+	 * The window geometry is double buffered, and will be applied at
+	 * the time wl_surface.commit of the corresponding wl_surface is
+	 * called.
+	 *
+	 * Once the window geometry of the surface is set, it is not
+	 * possible to unset it, and it will remain the same until
+	 * set_window_geometry is called again, even if a new subsurface or
+	 * buffer is attached.
+	 *
+	 * If never set, the value is the full bounds of the surface,
+	 * including any subsurfaces. This updates dynamically on every
+	 * commit. This unset is meant for extremely simple clients.
+	 *
+	 * The arguments are given in the surface-local coordinate space of
+	 * the wl_surface associated with this xdg_surface.
+	 *
+	 * The width and height must be greater than zero. Setting an
+	 * invalid size will raise an error. When applied, the effective
+	 * window geometry will be the set window geometry clamped to the
+	 * bounding rectangle of the combined geometry of the surface of
+	 * the xdg_surface and the associated subsurfaces.
+	 */
+	.set_window_geometry = zxdg_surface_set_window_geometry_impl,
+	/**
+	 * ack a configure event
+	 *
+	 * When a configure event is received, if a client commits the
+	 * surface in response to the configure event, then the client must
+	 * make an ack_configure request sometime before the commit
+	 * request, passing along the serial of the configure event.
+	 *
+	 * For instance, for toplevel surfaces the compositor might use
+	 * this information to move a surface to the top left only when the
+	 * client has drawn itself for the maximized or fullscreen state.
+	 *
+	 * If the client receives multiple configure events before it can
+	 * respond to one, it only has to ack the last configure event.
+	 *
+	 * A client is not required to commit immediately after sending an
+	 * ack_configure request - it may even ack_configure several times
+	 * before its next surface commit.
+	 *
+	 * A client may send multiple ack_configure requests before
+	 * committing, but only the last request sent before a commit
+	 * indicates which configure event the client really is responding
+	 * to.
+	 * @param serial the serial from the configure event
+	 */
+	.ack_configure = zxdg_surface_ack_configure_impl
+
+};
+
+
+
+/**
+* destroy xdg_shell
+*
+* Destroy this xdg_shell object.
+*
+* Destroying a bound xdg_shell object while there are surfaces
+* still alive created by this xdg_shell object instance is illegal
+* and will result in a protocol error.
+*/
+void zxdg_shell_destroy_impl(struct wl_client *client,
+				struct wl_resource *resource) {
+}
+/**
+* create a positioner object
+*
+* Create a positioner object. A positioner object is used to
+* position surfaces relative to some parent surface. See the
+* interface description and xdg_surface.get_popup for details.
+*/
+void zxdg_shell_create_positioner_impl(struct wl_client *client,
+				struct wl_resource *resource,
+				uint32_t id) {
+}
+/**
+* create a shell surface from a surface
+*
+* This creates an xdg_surface for the given surface. While
+* xdg_surface itself is not a role, the corresponding surface may
+* only be assigned a role extending xdg_surface, such as
+* xdg_toplevel or xdg_popup.
+*
+* This creates an xdg_surface for the given surface. An
+* xdg_surface is used as basis to define a role to a given
+* surface, such as xdg_toplevel or xdg_popup. It also manages
+* functionality shared between xdg_surface based surface roles.
+*
+* See the documentation of xdg_surface for more details about what
+* an xdg_surface is and how it is used.
+*/
+void zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
+		struct wl_resource *resource,
+		uint32_t id,
+		struct wl_resource *surface) {
+}
+/**
+* respond to a ping event
+*
+* A client must respond to a ping event with a pong request or
+* the client may be deemed unresponsive. See xdg_shell.ping.
+* @param serial serial of the ping event
+*/
+void zxdg_shell_pong_impl(struct wl_client *client,
+		struct wl_resource *resource,
+		uint32_t serial) {
+}
+
+static struct zxdg_shell_v6_interface zxdg_shell_v6_interface_impl = {
+	.destroy = zxdg_shell_destroy_impl,
+	.create_positioner = zxdg_shell_create_positioner_impl,
+	.get_xdg_surface = zxdg_shell_get_xdg_surface_impl,
+	.pong = zxdg_shell_pong_impl
+};
+
+// --------------------------
+
 // xdg shell
 static void xdg_shell_destroy (struct wl_client *client, struct wl_resource *resource) {
 	
@@ -494,7 +685,7 @@ int main () {
 
 	scroll = clutter_scroll_actor_new();
 	clutter_actor_add_child(stage,scroll);
-	clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());  
+	clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());
 
 	GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
