@@ -5,11 +5,23 @@
 #include <clutter/wayland/clutter-wayland-surface.h>
 
 #include <wayland-server.h>
+#include "xdg-foreign.h"
+#include "xdg-shell.h"
 
 #include <glib.h>
 
 #include <string.h>
 
+
+void info(int line, char *func, char *message) {
+  printf("%s:%d %s\n", func, line, message);
+}
+
+void trace(int line, const char *func) {
+  printf("%s:%d\n", func, line);
+}
+
+#define T trace(__LINE__, __func__)
 
 struct scroll_compositor {
   struct wl_display *wl_display;
@@ -17,22 +29,29 @@ struct scroll_compositor {
 };
 
 
-/* struct _MetaWaylandOutput */
-/* { */
-/*   GObject                   parent; */
-
-/*   struct wl_global         *global; */
-/*   MetaLogicalMonitor       *logical_monitor; */
-/*   guint                     mode_flags; */
-/*   float                     refresh_rate; */
-/*   gint                      scale; */
-
-/*   GList                    *resources; */
-/* }; */
-
 typedef struct scroll_compositor ScrollCompositor;
 
 static int signal_pipe[2];
+
+
+
+static void
+compositor_create_surface (struct wl_client *client,
+                              struct wl_resource *resource,
+                              guint32 id)
+{
+  /* MetaWaylandCompositor *compositor = wl_resource_get_user_data (resource); */
+  struct wl_surface *surface = wl_resource_create (client, &wl_surface_interface, wl_resource_get_version (resource), id);
+  ClutterActor *surface_actor = clutter_wayland_surface_new(surface);
+
+  wl_resource_set_implementation (surface, &wl_surface_interface,
+                                  surface_actor, wl_surface_destructor);
+}
+
+static const struct wl_compositor_interface meta_wayland_wl_compositor_interface = {
+  .wl_compositor_create_surface = compositor_create_surface,
+  .wl_compositor_create_region = compositor_create_region
+};
 
 static void
 compositor_bind (struct wl_client *client,
@@ -41,10 +60,12 @@ compositor_bind (struct wl_client *client,
                  guint32 id)
 {
   /* MetaWaylandCompositor *compositor = data; */
+  T;
   struct wl_resource *resource;
 
   resource = wl_resource_create (client, &wl_compositor_interface, version, id);
-  /* wl_resource_set_implementation (resource, &meta_wayland_wl_compositor_interface, compositor, NULL); */
+  wl_resource_set_implementation (resource, &wl_compositor_interface, NULL, NULL);
+  T;
 }
 
 typedef struct
@@ -58,12 +79,14 @@ typedef struct
 static gboolean
 wayland_event_source_prepare (GSource *base, int *timeout)
 {
+  T;
   WaylandEventSource *source = (WaylandEventSource *)base;
 
   *timeout = -1;
 
   wl_display_flush_clients (source->display);
 
+  T;
   return FALSE;
 }
 
@@ -74,11 +97,15 @@ wayland_event_source_dispatch (GSource *base,
                                GSourceFunc callback,
                                void *data)
 {
+  T;
   WaylandEventSource *source = (WaylandEventSource *)base;
+  T;
   struct wl_event_loop *loop = wl_display_get_event_loop (source->display);
 
+  T;
   wl_event_loop_dispatch (loop, 0);
 
+  T;
   return TRUE;
 }
 
@@ -108,6 +135,61 @@ wayland_event_source_new (struct wl_display *display)
 }
 
 static void
+bind_xdg_exporter (struct wl_client *client,
+                   void             *data,
+                   uint32_t          version,
+                   uint32_t          id)
+{
+  T;
+  /* MetaWaylandXdgForeign *foreign = data; */
+  struct wl_resource *resource;
+
+  resource = wl_resource_create (client,
+                                 &zxdg_exporter_v1_interface,
+                                 1,
+                                 id);
+
+  if (resource == NULL)
+    {
+      wl_client_post_no_memory (client);
+      return;
+    }
+
+  wl_resource_set_implementation (resource,
+                                  &zxdg_exporter_v1_interface,
+                                  NULL, NULL);
+  T;
+}
+
+static void
+bind_xdg_importer (struct wl_client *client,
+                   void             *data,
+                   uint32_t          version,
+                   uint32_t          id)
+{
+  /* MetaWaylandXdgForeign *foreign = data; */
+  struct wl_resource *resource;
+
+  resource = wl_resource_create (client,
+                                 &zxdg_importer_v1_interface,
+                                 1,
+                                 id);
+
+  T;
+  if (resource == NULL)
+    {
+      wl_client_post_no_memory (client);
+      return;
+    }
+
+  wl_resource_set_implementation (resource,
+                                  &zxdg_importer_v1_interface,
+                                  NULL,
+                                  NULL);
+}
+
+
+static void
 bind_xdg_shell (struct wl_client *client,
                 void             *data,
                 guint32           version,
@@ -125,6 +207,43 @@ bind_xdg_shell (struct wl_client *client,
   wl_resource_set_implementation (resource,
                                   &zxdg_shell_v6_interface,
                                   NULL, wl_resource_destroy);
+}
+
+static void
+bind_output (struct wl_client *client,
+             void *data,
+             guint32 version,
+             guint32 id)
+{
+  /* MetaWaylandOutput *wayland_output = data; */
+  /* MetaLogicalMonitor *logical_monitor = wayland_output->logical_monitor; */
+  struct wl_resource *resource;
+  /* MetaMonitor *monitor; */
+
+  resource = wl_resource_create (client, &wl_output_interface, version, id);
+  /* wayland_output->resources = g_list_prepend (wayland_output->resources, resource); */
+
+  /* wl_resource_set_user_data (resource, wayland_output); */
+  wl_resource_set_destructor (resource, wl_resource_destroy);
+
+  /* monitor = pick_main_monitor (logical_monitor); */
+
+  /* meta_verbose ("Binding monitor %p/%s (%u, %u, %u, %u) x %f\n", */
+  /*               logical_monitor, */
+  /*               meta_monitor_get_product (monitor), */
+  /*               logical_monitor->rect.x, logical_monitor->rect.y, */
+  /*               logical_monitor->rect.width, logical_monitor->rect.height, */
+  /*               wayland_output->refresh_rate); */
+
+  wl_output_send_geometry (resource,
+                           0,
+                           0,
+                           100,
+                           80,
+                           WL_OUTPUT_SUBPIXEL_VERTICAL_BGR,
+                           "bar",
+                           "aoeu",
+                           WL_OUTPUT_TRANSFORM_NORMAL);
 }
 
 int
@@ -151,6 +270,21 @@ main (int argc, char **argv)
                     NULL, compositor_bind);
 
   wl_global_create (display,
+                    &wl_output_interface,
+                    2,
+                    NULL, bind_output);
+
+  // no idea what this is
+  wl_global_create (display,
+                    &zxdg_exporter_v1_interface, 1,
+                    NULL,
+                    bind_xdg_exporter);
+  wl_global_create (display,
+                    &zxdg_importer_v1_interface, 1,
+                    NULL,
+                    bind_xdg_importer);
+  // xdg_shell
+  wl_global_create (display,
                     &zxdg_shell_v6_interface,
                     1,
                     NULL,
@@ -158,8 +292,13 @@ main (int argc, char **argv)
 
   wl_display_init_shm (display);
 
+
+  /* meta_wayland_xdg_foreign_init (compositor); */
+
   // socket
   wl_display_add_socket_auto (display);
+
+  /* meta_wayland_xdg_foreign_init (compositor); */
 
   /* set_gnome_env ("DISPLAY", meta_wayland_get_xwayland_display_name (compositor)); */
   /* set_gnome_env ("WAYLAND_DISPLAY", meta_wayland_get_wayland_display_name (compositor)); */
