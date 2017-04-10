@@ -121,7 +121,13 @@ static void surface_commit (struct wl_client *client, struct wl_resource *resour
 
 	GError *error; 
 
-	clutter_wayland_surface_attach_buffer(surface->actor, surface->pending_buffer, &error);
+	ClutterActor *actor = surface->actor;
+	clutter_wayland_surface_attach_buffer(actor, surface->pending_buffer, &error);
+
+	gfloat w = clutter_actor_get_width(actor);
+	gfloat h = clutter_actor_get_height(actor);
+	clutter_wayland_surface_damage_buffer(actor, surface->pending_buffer,
+										  0, 0, w, h);
 
 	if(surface->buffer != NULL)
 		wl_buffer_send_release (surface->buffer);
