@@ -11,16 +11,25 @@
 #include "xdg-shell.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+
+
+long backend_get_timestamp (void) {
+	struct timespec t;
+	clock_gettime (CLOCK_MONOTONIC, &t);
+	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
 
 void info(int line, char *func, char *message) {
 	printf("%s:%d %s\n", func, line, message);
 }
 
 void trace(int line, const char *func) {
-	/* printf("%s:%d\n", func, line); */
+	printf("%s:%d\n", func, line);
 }
 
-#define T trace(__LINE__, __func__)
+#define T // trace(__LINE__, __func__)
+#define TF trace(__LINE__, __func__)
 
 static struct wl_display *display;
 static int pointer_x, pointer_y;
@@ -51,6 +60,7 @@ struct surface {
 	struct wl_resource *surface;
 	struct wl_resource *xdg_surface;
 	struct wl_resource *buffer;
+	struct wl_resource *pending_buffer;
 	struct wl_resource *frame_callback;
 	int x, y;
 	ClutterActor *actor;
@@ -78,14 +88,34 @@ static void surface_destroy (struct wl_client *client, struct wl_resource *resou
 }
 static void surface_attach (struct wl_client *client, struct wl_resource *resource, struct wl_resource *buffer, int32_t x, int32_t y) {
 	struct surface *surface = wl_resource_get_user_data (resource);
-	surface->buffer = buffer;
+	surface->pending_buffer = buffer;
 }
 static void surface_damage (struct wl_client *client, struct wl_resource *resource, int32_t x, int32_t y, int32_t width, int32_t height) {
 	
 }
+
+
+static gboolean frame_done_cb(gpointer data)
+{
+	struct surface *surface = (struct surface*)data;
+	TF;
+
+	if (surface->frame_callback) {
+		TF;
+		wl_callback_send_done (surface->frame_callback, backend_get_timestamp());
+		wl_resource_destroy (surface->frame_callback);
+		surface->frame_callback = NULL;
+	}
+	return FALSE;
+}
+
+
 static void surface_frame (struct wl_client *client, struct wl_resource *resource, uint32_t callback) {
+	TF;
 	struct surface *surface = wl_resource_get_user_data (resource);
 	surface->frame_callback = wl_resource_create (client, &wl_callback_interface, 1, callback);
+
+	g_timeout_add(500, frame_done_cb, surface);
 }
 static void surface_set_opaque_region (struct wl_client *client, struct wl_resource *resource, struct wl_resource *region) {
 	
@@ -93,13 +123,22 @@ static void surface_set_opaque_region (struct wl_client *client, struct wl_resou
 static void surface_set_input_region (struct wl_client *client, struct wl_resource *resource, struct wl_resource *region) {
 	
 }
+
 static void surface_commit (struct wl_client *client, struct wl_resource *resource) {
 	struct surface *surface = wl_resource_get_user_data (resource);
 
 	GError *error; 
-	clutter_wayland_surface_attach_buffer(surface->actor, surface->buffer, &error);
-	wl_buffer_send_release (surface->buffer);
-	redraw_needed = 1;
+
+	clutter_wayland_surface_attach_buffer(surface->actor, surface->pending_buffer, &error);
+
+	if(surface->buffer != NULL)
+		wl_buffer_send_release (surface->buffer);
+
+	surface->buffer = surface->pending_buffer;
+
+	TF;
+
+	/* redraw_needed = 1; */
 }
 static void surface_set_buffer_transform (struct wl_client *client, struct wl_resource *resource, int32_t transform) {
 	
@@ -132,6 +171,7 @@ static struct wl_region_interface region_interface = {&region_destroy, &region_a
 // compositor
 static void compositor_create_surface (struct wl_client *client, struct wl_resource *resource, uint32_t id) {
 	struct surface *surface = calloc (1, sizeof(struct surface));
+	surface->buffer = NULL;
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
 	surface->actor = clutter_wayland_surface_new(surface->surface);
