@@ -171,6 +171,11 @@ main (int argc, char **argv)
   // clutter
   // gjs
 
+  clutter_init(0, NULL);
+  ClutterActor *stage = clutter_stage_new ();
+  /* clutter_stage_set_user_resizable(stage, TRUE); */
+  clutter_actor_show_all (stage);
+
   g_main_loop_run (g_main_loop_new (NULL, FALSE));
 
 }
