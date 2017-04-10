@@ -100,12 +100,6 @@ static gboolean frame_done_cb(gpointer data)
 	struct surface *surface = (struct surface*)data;
 	TF;
 
-	if (surface->frame_callback) {
-		TF;
-		wl_callback_send_done (surface->frame_callback, backend_get_timestamp());
-		wl_resource_destroy (surface->frame_callback);
-		surface->frame_callback = NULL;
-	}
 	return FALSE;
 }
 
@@ -114,8 +108,6 @@ static void surface_frame (struct wl_client *client, struct wl_resource *resourc
 	TF;
 	struct surface *surface = wl_resource_get_user_data (resource);
 	surface->frame_callback = wl_resource_create (client, &wl_callback_interface, 1, callback);
-
-	g_timeout_add(500, frame_done_cb, surface);
 }
 static void surface_set_opaque_region (struct wl_client *client, struct wl_resource *resource, struct wl_resource *region) {
 	
@@ -172,6 +164,7 @@ static struct wl_region_interface region_interface = {&region_destroy, &region_a
 static void compositor_create_surface (struct wl_client *client, struct wl_resource *resource, uint32_t id) {
 	struct surface *surface = calloc (1, sizeof(struct surface));
 	surface->buffer = NULL;
+	surface->frame_callback = NULL;
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
 	surface->actor = clutter_wayland_surface_new(surface->surface);
@@ -445,6 +438,21 @@ wayland_event_source_new (struct wl_display *display)
 	return &source->source;
 }
 
+void after_paint(ClutterStage *stage, gpointer data)
+{
+	TF;
+	struct surface *surface;
+	wl_list_for_each(surface, &surfaces, link) {
+		if (surface->frame_callback) {
+			TF;
+			wl_callback_send_done (surface->frame_callback, backend_get_timestamp());
+			wl_resource_destroy (surface->frame_callback);
+			surface->frame_callback = NULL;
+		}
+	}
+
+}
+
 
 int main () {
 
@@ -478,7 +486,11 @@ int main () {
 	/* clutter_stage_set_user_resizable(stage, TRUE); */
 	clutter_actor_show_all (stage);
 
-	g_main_loop_run (g_main_loop_new (NULL, FALSE));
+	GMainLoop *loop = g_main_loop_new (NULL, FALSE);
+
+	g_signal_connect(stage, "after-paint", G_CALLBACK(after_paint), loop);
+
+	g_main_loop_run (loop);
 
 	wl_display_destroy (display);
 	return 0;
