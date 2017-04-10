@@ -35,7 +35,8 @@ static struct wl_display *display;
 static int pointer_x, pointer_y;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
-static ClutterActor *stage;
+static ClutterActor *stage = NULL;
+static ClutterActor *scroll = NULL;
 
 struct client {
 	struct wl_client *client;
@@ -173,7 +174,7 @@ static void compositor_create_surface (struct wl_client *client, struct wl_resou
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
 	surface->actor = clutter_wayland_surface_new(surface->surface);
-	clutter_actor_add_child(stage, surface->actor);
+	clutter_actor_add_child(scroll, surface->actor);
 
 	wl_resource_set_implementation (surface->surface, &surface_interface, surface, &delete_surface);
 	surface->client = get_client (client);
@@ -490,6 +491,10 @@ int main () {
 	stage = clutter_stage_new ();
 	/* clutter_stage_set_user_resizable(stage, TRUE); */
 	clutter_actor_show_all (stage);
+
+	scroll = clutter_scroll_actor_new();
+	clutter_actor_add_child(stage,scroll);
+	clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());  
 
 	GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
