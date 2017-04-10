@@ -107,6 +107,26 @@ wayland_event_source_new (struct wl_display *display)
   return &source->source;
 }
 
+static void
+bind_xdg_shell (struct wl_client *client,
+                void             *data,
+                guint32           version,
+                guint32           id)
+{
+  /* MetaWaylandXdgShellClient *shell_client; */
+
+  /* shell_client = g_new0 (MetaWaylandXdgShellClient, 1); */
+
+  T;
+  struct wl_resource *resource = wl_resource_create (client,
+                                              &zxdg_shell_v6_interface,
+                                              version, id);
+  T;
+  wl_resource_set_implementation (resource,
+                                  &zxdg_shell_v6_interface,
+                                  NULL, wl_resource_destroy);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -129,6 +149,12 @@ main (int argc, char **argv)
                     &wl_compositor_interface,
                     3,
                     NULL, compositor_bind);
+
+  wl_global_create (display,
+                    &zxdg_shell_v6_interface,
+                    1,
+                    NULL,
+                    bind_xdg_shell);
 
   wl_display_init_shm (display);
 
