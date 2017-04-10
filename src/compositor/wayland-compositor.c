@@ -91,6 +91,10 @@ static void surface_attach (struct wl_client *client, struct wl_resource *resour
 	surface->pending_buffer = buffer;
 }
 static void surface_damage (struct wl_client *client, struct wl_resource *resource, int32_t x, int32_t y, int32_t width, int32_t height) {
+	struct surface *surface = wl_resource_get_user_data (resource);
+	
+	clutter_wayland_surface_damage_buffer(surface->actor, surface->pending_buffer,
+										  x, y, width, height);
 	
 }
 
@@ -123,11 +127,6 @@ static void surface_commit (struct wl_client *client, struct wl_resource *resour
 
 	ClutterActor *actor = surface->actor;
 	clutter_wayland_surface_attach_buffer(actor, surface->pending_buffer, &error);
-
-	gfloat w = clutter_actor_get_width(actor);
-	gfloat h = clutter_actor_get_height(actor);
-	clutter_wayland_surface_damage_buffer(actor, surface->pending_buffer,
-										  0, 0, w, h);
 
 	if(surface->buffer != NULL)
 		wl_buffer_send_release (surface->buffer);
