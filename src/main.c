@@ -118,6 +118,7 @@ main (int argc, char **argv)
 
   // wl_display
   struct wl_display *display = wl_display_create();
+  clutter_wayland_set_compositor_display(display);
 
   // wayland event loop
   wayland_event_source = wayland_event_source_new (display);
