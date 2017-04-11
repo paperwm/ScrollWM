@@ -15,12 +15,6 @@
 #include <time.h>
 
 
-long backend_get_timestamp (void) {
-	struct timespec t;
-	clock_gettime (CLOCK_MONOTONIC, &t);
-	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
-}
-
 void info(int line, char *func, char *message) {
 	printf("%s:%d %s\n", func, line, message);
 }
@@ -458,7 +452,7 @@ void after_paint(ClutterStage *stage, gpointer data)
 	wl_list_for_each(surface, &surfaces, link) {
 		if (surface->frame_callback) {
 			TF;
-			wl_callback_send_done (surface->frame_callback, backend_get_timestamp());
+			wl_callback_send_done (surface->frame_callback, g_get_monotonic_time()/1000);
 			wl_resource_destroy (surface->frame_callback);
 			surface->frame_callback = NULL;
 		}
