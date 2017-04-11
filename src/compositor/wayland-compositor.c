@@ -304,100 +304,23 @@ static struct xdg_surface_interface my_xdg_surface_interface = {
 	&xdg_surface_set_minimized
 };
 
+// -- zxdg toplevel
 
+/**
+ * assign the xdg_toplevel surface role
+ *
+ * This creates an xdg_toplevel object for the given xdg_surface
+ * and gives the associated wl_surface the xdg_toplevel role.
+ *
+ * See the documentation of xdg_toplevel for more details about
+ * what an xdg_toplevel is and how it is used.
+ */
 void zxdg_surface_get_toplevel_impl(struct wl_client *client,
 						   struct wl_resource *resource,
 						   uint32_t id) {
 	
 }
 
-void zxdg_surface_ack_configure_impl(struct wl_client *client,
-							struct wl_resource *resource,
-							uint32_t serial) {
-	
-}
-
-void zxdg_surface_set_window_geometry_impl(struct wl_client *client,
-								  struct wl_resource *resource,
-								  int32_t x,
-								  int32_t y,
-								  int32_t width,
-								  int32_t height) {
-	
-}
-
-void zxdg_surface_get_popup_impl(struct wl_client *client,
-						struct wl_resource *resource,
-						uint32_t id,
-						struct wl_resource *parent,
-						struct wl_resource *positioner) {
-	
-}
-
-void zxdg_surface_destroy_impl(struct wl_client *client,
-					  struct wl_resource *resource) {
-	
-}
-
-static struct zxdg_surface_v6_interface zxdg_surface_v6_interface_impl = {
-	/**
-	 * destroy the xdg_surface
-	 *
-	 * Destroy the xdg_surface object. An xdg_surface must only be
-	 * destroyed after its role object has been destroyed.
-	 */
-	.destroy = zxdg_surface_destroy_impl,
-	/**
-	 * assign the xdg_toplevel surface role
-	 *
-	 * This creates an xdg_toplevel object for the given xdg_surface
-	 * and gives the associated wl_surface the xdg_toplevel role.
-	 *
-	 * See the documentation of xdg_toplevel for more details about
-	 * what an xdg_toplevel is and how it is used.
-	 */
-	.get_toplevel = zxdg_surface_get_toplevel_impl,
-	/**
-	 * assign the xdg_popup surface role
-	 *
-	 * This creates an xdg_popup object for the given xdg_surface and
-	 * gives the associated wl_surface the xdg_popup role.
-	 *
-	 * See the documentation of xdg_popup for more details about what
-	 * an xdg_popup is and how it is used.
-	 */
-	.get_popup = zxdg_surface_get_popup_impl,
-	/**
-	 * set the new window geometry
-	 *
-	 * The window geometry of a surface is its "visible bounds" from
-	 * the user's perspective. Client-side decorations often have
-	 * invisible portions like drop-shadows which should be ignored for
-	 * the purposes of aligning, placing and constraining windows.
-	 *
-	 * The window geometry is double buffered, and will be applied at
-	 * the time wl_surface.commit of the corresponding wl_surface is
-	 * called.
-	 *
-	 * Once the window geometry of the surface is set, it is not
-	 * possible to unset it, and it will remain the same until
-	 * set_window_geometry is called again, even if a new subsurface or
-	 * buffer is attached.
-	 *
-	 * If never set, the value is the full bounds of the surface,
-	 * including any subsurfaces. This updates dynamically on every
-	 * commit. This unset is meant for extremely simple clients.
-	 *
-	 * The arguments are given in the surface-local coordinate space of
-	 * the wl_surface associated with this xdg_surface.
-	 *
-	 * The width and height must be greater than zero. Setting an
-	 * invalid size will raise an error. When applied, the effective
-	 * window geometry will be the set window geometry clamped to the
-	 * bounding rectangle of the combined geometry of the surface of
-	 * the xdg_surface and the associated subsurfaces.
-	 */
-	.set_window_geometry = zxdg_surface_set_window_geometry_impl,
 	/**
 	 * ack a configure event
 	 *
@@ -423,6 +346,54 @@ static struct zxdg_surface_v6_interface zxdg_surface_v6_interface_impl = {
 	 * to.
 	 * @param serial the serial from the configure event
 	 */
+void zxdg_surface_ack_configure_impl(struct wl_client *client,
+							struct wl_resource *resource,
+							uint32_t serial) {
+	
+}
+
+void zxdg_surface_set_window_geometry_impl(struct wl_client *client,
+								  struct wl_resource *resource,
+								  int32_t x,
+								  int32_t y,
+								  int32_t width,
+								  int32_t height) {
+	
+}
+
+/**
+ * assign the xdg_popup surface role
+ *
+ * This creates an xdg_popup object for the given xdg_surface and
+ * gives the associated wl_surface the xdg_popup role.
+ *
+ * See the documentation of xdg_popup for more details about what
+ * an xdg_popup is and how it is used.
+ */
+void zxdg_surface_get_popup_impl(struct wl_client *client,
+						struct wl_resource *resource,
+						uint32_t id,
+						struct wl_resource *parent,
+						struct wl_resource *positioner) {
+	
+}
+
+/**
+ * destroy the xdg_surface
+ *
+ * Destroy the xdg_surface object. An xdg_surface must only be
+ * destroyed after its role object has been destroyed.
+ */
+void zxdg_surface_destroy_impl(struct wl_client *client,
+					  struct wl_resource *resource) {
+	
+}
+
+static struct zxdg_surface_v6_interface zxdg_surface_v6_interface_impl = {
+	.destroy = zxdg_surface_destroy_impl,
+	.get_toplevel = zxdg_surface_get_toplevel_impl,
+	.get_popup = zxdg_surface_get_popup_impl,
+	.set_window_geometry = zxdg_surface_set_window_geometry_impl,
 	.ack_configure = zxdg_surface_ack_configure_impl
 
 };
