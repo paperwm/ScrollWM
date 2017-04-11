@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "xdg-shell-v6.c"
 
 void info(int line, char *func, char *message) {
 	printf("%s:%d %s\n", func, line, message);
@@ -481,6 +482,11 @@ int main () {
 	wl_global_create (display, &wl_compositor_interface, 3, NULL, &compositor_bind);
 	wl_global_create (display, &wl_shell_interface, 1, NULL, &shell_bind);
 	wl_global_create (display, &xdg_shell_interface, 1, NULL, &xdg_shell_bind);
+
+	wl_global_create (display, &zxdg_surface_v6_interface, 1, NULL, &zxdg_surface_bind);
+	wl_global_create (display, &zxdg_shell_v6_interface, 1, NULL, &zxdg_shell_bind);
+	wl_global_create (display, &zxdg_toplevel_v6_interface, 1, NULL, &zxdg_toplevel_bind);
+
 	wl_global_create (display, &wl_seat_interface, 1, NULL, &seat_bind);
 	wl_display_init_shm (display);
 
