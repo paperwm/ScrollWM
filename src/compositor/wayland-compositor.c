@@ -125,6 +125,9 @@ static void surface_set_input_region (struct wl_client *client, struct wl_resour
 
 static void surface_commit (struct wl_client *client, struct wl_resource *resource) {
 	struct surface *surface = wl_resource_get_user_data (resource);
+	// clients are able to send commit before attach
+	if (surface->pending_buffer == NULL)
+		return;
 
 	GError *error; 
 
