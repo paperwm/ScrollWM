@@ -671,6 +671,20 @@ extern struct zxdg_toplevel_v6_interface zxdg_toplevel_v6_interface_impl = {
 	.set_minimized = zxdg_toplevel_set_minimized
 };
 
+void zxdg_popup_destroy(struct wl_client *client,
+                           struct wl_resource *resource) {
+}
+void zxdg_popup_grab(struct wl_client *client,
+                        struct wl_resource *resource,
+                        struct wl_resource *seat,
+                        uint32_t serial) {
+}
+
+extern struct zxdg_popup_v6_interface zxdg_popup_v6_interface_impl = {
+	.destroy = zxdg_popup_destroy,
+	.grab = zxdg_popup_grab
+};
+
 /**
 * destroy xdg_shell
 *
