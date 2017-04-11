@@ -77,6 +77,7 @@ static struct surface *pointer_surface = NULL; // surface under the pointer
 
 static void delete_surface (struct wl_resource *resource) {
 	struct surface *surface = wl_resource_get_user_data (resource);
+	clutter_actor_destroy(surface->actor);
 	wl_list_remove (&surface->link);
 	if (surface == active_surface) active_surface = NULL;
 	if (surface == pointer_surface) pointer_surface = NULL;
