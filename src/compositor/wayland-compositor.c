@@ -429,6 +429,169 @@ static struct zxdg_surface_v6_interface zxdg_surface_v6_interface_impl = {
 };
 
 
+/**
+ * destroy the xdg_positioner object
+ *
+ * Notify the compositor that the xdg_positioner will no longer
+ * be used.
+ */
+void zxdg_positioner_destroy(struct wl_client *client,
+                             struct wl_resource *resource) {
+
+}
+
+/**
+ * set the size of the to-be positioned rectangle
+ *
+ * Set the size of the surface that is to be positioned with the
+ * positioner object. The size is in surface-local coordinates and
+ * corresponds to the window geometry. See
+ * xdg_surface.set_window_geometry.
+ *
+ * If a zero or negative size is set the invalid_input error is
+ * raised.
+ * @param width width of positioned rectangle
+ * @param height height of positioned rectangle
+ */
+void zxdg_positioner_set_size(struct wl_client *client,
+                              struct wl_resource *resource,
+                              int32_t width,
+                              int32_t height) {
+
+}
+
+/**
+ * set the anchor rectangle within the parent surface
+ *
+ * Specify the anchor rectangle within the parent surface that
+ * the child surface will be placed relative to. The rectangle is
+ * relative to the window geometry as defined by
+ * xdg_surface.set_window_geometry of the parent surface. The
+ * rectangle must be at least 1x1 large.
+ *
+ * When the xdg_positioner object is used to position a child
+ * surface, the anchor rectangle may not extend outside the window
+ * geometry of the positioned child's parent surface.
+ *
+ * If a zero or negative size is set the invalid_input error is
+ * raised.
+ * @param x x position of anchor rectangle
+ * @param y y position of anchor rectangle
+ * @param width width of anchor rectangle
+ * @param height height of anchor rectangle
+ */
+void zxdg_positioner_set_anchor_rect(struct wl_client *client,
+                                     struct wl_resource *resource,
+                                     int32_t x,
+                                     int32_t y,
+                                     int32_t width,
+                                     int32_t height) {
+
+}
+
+/**
+ * set anchor rectangle anchor edges
+ *
+ * Defines a set of edges for the anchor rectangle. These are
+ * used to derive an anchor point that the child surface will be
+ * positioned relative to. If two orthogonal edges are specified
+ * (e.g. 'top' and 'left'), then the anchor point will be the
+ * intersection of the edges (e.g. the top left position of the
+ * rectangle); otherwise, the derived anchor point will be centered
+ * on the specified edge, or in the center of the anchor rectangle
+ * if no edge is specified.
+ *
+ * If two parallel anchor edges are specified (e.g. 'left' and
+ * 'right'), the invalid_input error is raised.
+ * @param anchor bit mask of anchor edges
+ */
+void zxdg_positioner_set_anchor(struct wl_client *client,
+                                struct wl_resource *resource,
+                                uint32_t anchor) {
+
+}
+
+/**
+ * set child surface gravity
+ *
+ * Defines in what direction a surface should be positioned,
+ * relative to the anchor point of the parent surface. If two
+ * orthogonal gravities are specified (e.g. 'bottom' and 'right'),
+ * then the child surface will be placed in the specified
+ * direction; otherwise, the child surface will be centered over
+ * the anchor point on any axis that had no gravity specified.
+ *
+ * If two parallel gravities are specified (e.g. 'left' and
+ * 'right'), the invalid_input error is raised.
+ * @param gravity bit mask of gravity directions
+ */
+void zxdg_positioner_set_gravity(struct wl_client *client,
+                                 struct wl_resource *resource,
+                                 uint32_t gravity) {
+
+}
+
+/**
+ * set the adjustment to be done when constrained
+ *
+ * Specify how the window should be positioned if the originally
+ * intended position caused the surface to be constrained, meaning
+ * at least partially outside positioning boundaries set by the
+ * compositor. The adjustment is set by constructing a bitmask
+ * describing the adjustment to be made when the surface is
+ * constrained on that axis.
+ *
+ * If no bit for one axis is set, the compositor will assume that
+ * the child surface should not change its position on that axis
+ * when constrained.
+ *
+ * If more than one bit for one axis is set, the order of how
+ * adjustments are applied is specified in the corresponding
+ * adjustment descriptions.
+ *
+ * The default adjustment is none.
+ * @param constraint_adjustment bit mask of constraint adjustments
+ */
+void zxdg_positioner_set_constraint_adjustment(struct wl_client *client,
+                                               struct wl_resource *resource,
+                                               uint32_t constraint_adjustment) {
+
+}
+
+/**
+ * set surface position offset
+ *
+ * Specify the surface position offset relative to the position
+ * of the anchor on the anchor rectangle and the anchor on the
+ * surface. For example if the anchor of the anchor rectangle is at
+ * (x, y), the surface has the gravity bottom|right, and the offset
+ * is (ox, oy), the calculated surface position will be (x + ox, y
+ * + oy). The offset position of the surface is the one used for
+ * constraint testing. See set_constraint_adjustment.
+ *
+ * An example use case is placing a popup menu on top of a user
+ * interface element, while aligning the user interface element of
+ * the parent surface with some user interface element placed
+ * somewhere in the popup surface.
+ * @param x surface position x offset
+ * @param y surface position y offset
+ */
+void zxdg_positioner_set_offset(struct wl_client *client,
+                                struct wl_resource *resource,
+                                int32_t x,
+                                int32_t y) {
+
+}
+
+extern struct zxdg_positioner_v6_interface zxdg_positioner_v6_interface_impl = {
+  .destroy = zxdg_positioner_destroy,
+  .set_size = zxdg_positioner_set_size,
+  .set_anchor_rect = zxdg_positioner_set_anchor_rect,
+  .set_anchor = zxdg_positioner_set_anchor,
+  .set_gravity = zxdg_positioner_set_gravity,
+  .set_constraint_adjustment = zxdg_positioner_set_constraint_adjustment,
+  .set_offset = zxdg_positioner_set_offset
+};
 
 /**
 * destroy xdg_shell
