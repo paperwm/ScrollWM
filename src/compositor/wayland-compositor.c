@@ -27,7 +27,7 @@ void trace(int line, const char *func) {
 #define T // trace(__LINE__, __func__)
 #define TF trace(__LINE__, __func__)
 
-static struct wl_display *display;
+struct wl_display *display;
 static int pointer_x, pointer_y;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;

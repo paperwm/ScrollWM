@@ -1,6 +1,7 @@
 
 #include <wayland-server.h>
 #include "xdg-shell-unstable-v6-server-protocol.h"
+#include "compositor.h"
 
 // toplevel
 
@@ -428,6 +429,9 @@ void zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
                                   &zxdg_surface_v6_interface_impl,
                                   surface,
                                   NULL);
+
+  uint32_t serial = wl_display_next_serial(display);
+  zxdg_surface_v6_send_configure(res, serial);
 }
 /**
  * respond to a ping event
