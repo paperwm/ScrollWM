@@ -128,19 +128,13 @@ static void surface_commit (struct wl_client *client, struct wl_resource *resour
 
 	GError *error;
 
-    TF;
 	ClutterActor *actor = surface->actor;
-    TF;
 	clutter_wayland_surface_attach_buffer((ClutterWaylandSurface*) actor, surface->pending_buffer, &error);
 
-    TF;
 	if(surface->buffer != NULL)
 		wl_buffer_send_release (surface->buffer);
 
-    TF;
 	surface->buffer = surface->pending_buffer;
-
-	TF;
 
 	/* redraw_needed = 1; */
 }
@@ -172,6 +166,24 @@ static void region_subtract (struct wl_client *client, struct wl_resource *resou
 }
 static struct wl_region_interface region_interface = {&region_destroy, &region_add, &region_subtract};
 
+static gboolean enter_event(ClutterActor *actor, ClutterCrossingEvent *event, gpointer data) {
+	
+	struct client *client = data;
+	printf("enter_event: %s (%.2f, %.2f)\n", clutter_actor_get_name(actor), event->x, event->y);
+	if(client->pointer) {
+		gfloat x = clutter_actor_get_x(actor);
+		gfloat y = clutter_actor_get_y(actor);
+		uint32_t serial = wl_display_next_serial(display);
+		struct wl_surface *surface = clutter_wayland_surface_get_surface(actor);
+		wl_pointer_send_enter(client->pointer, serial, surface,
+		                      wl_fixed_from_double(event->x - x),
+		                      wl_fixed_from_double(event->y - y));
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
 // compositor
 static void compositor_create_surface (struct wl_client *client, struct wl_resource *resource, uint32_t id) {
 	struct surface *surface = calloc (1, sizeof(struct surface));
@@ -180,10 +192,14 @@ static void compositor_create_surface (struct wl_client *client, struct wl_resou
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
 	surface->actor = clutter_wayland_surface_new((struct wl_surface*) surface->surface);
-	clutter_actor_add_child(scroll, surface->actor);
+	clutter_actor_set_reactive(surface->actor, TRUE);
 
 	wl_resource_set_implementation (surface->surface, &surface_interface, surface, &delete_surface);
 	surface->client = get_client (client);
+
+	g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface->client);
+	clutter_actor_add_child(scroll, surface->actor);
+
 	wl_list_insert (&surfaces, &surface->link);
 }
 static void compositor_create_region (struct wl_client *client, struct wl_resource *resource, uint32_t id) {
@@ -476,8 +492,8 @@ int main (int argc, char **argv) {
 	wl_list_init (&clients);
 	wl_list_init (&surfaces);
 	display = wl_display_create ();
-	clutter_wayland_set_compositor_display(display);
-  clutter_set_windowing_backend ("eglnative");
+	/* clutter_wayland_set_compositor_display(display); */
+  clutter_set_windowing_backend ("x11");
 
 	GSource *wayland_event_source;
 
@@ -534,7 +550,7 @@ int main (int argc, char **argv) {
     if (wl_keyboard == NULL)
       printf("wl_keyboard is null\n");
 
-    if (pointer == keyboard) {
+    if (pointer == wl_keyboard) {
       printf("pointer and keyboard on same seat\n");
     } else {
       printf("pointer and keyboard is not on the same seat\n");
