@@ -266,7 +266,7 @@ void zxdg_surface_get_toplevel_impl(struct wl_client *client,
     wl_resource_create (client, &zxdg_toplevel_v6_interface, 1, id);
   wl_resource_set_implementation (res,
                                   &zxdg_toplevel_v6_interface_impl,
-                                  client,
+                                  id,
                                   NULL);
 }
 
@@ -298,7 +298,7 @@ void zxdg_surface_get_toplevel_impl(struct wl_client *client,
 void zxdg_surface_ack_configure_impl(struct wl_client *client,
                                      struct wl_resource *resource,
                                      uint32_t serial) {
-
+  printf("ack configuer request");
 }
 
 /**

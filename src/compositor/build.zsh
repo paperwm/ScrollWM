@@ -1,8 +1,8 @@
 #!/usr/bin/env nix-shell
-#! nix-shell -i zsh 
+#! nix-shell -i bash --pure
 
 function pkgs() {
-    pkg-config --cflags --libs wayland-server mutter-clutter-1.0 glib-2.0
+    pkg-config --cflags --libs clutter-egl-1.0
 }
 
 gcc -o wayland-compositor wayland-compositor.c xdg-shell-*protocol.c \

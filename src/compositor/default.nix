@@ -1,5 +1,9 @@
 with import ~/nixpkgs {};
 
+let
+  clutter = callPackage ~/nixpkgs/pkgs/development/libraries/clutter { waylandSupport = true; };
+in
+
 stdenv.mkDerivation rec {
   version = "0.x";
   name = "scroll-wm";
@@ -21,7 +25,7 @@ stdenv.mkDerivation rec {
 
   buildInputs =
     with xorg; [ libX11 mesa libXext libXfixes libXdamage libXcomposite libXi ] ++
-    [cogl gobjectIntrospection atk pango json_glib cairo pkgconfig gnome3.mutter xwayland wayland wayland-protocols ];
+    [cogl gobjectIntrospection atk pango json_glib cairo clutter pkgconfig xwayland wayland wayland-protocols ];
 
   installFlags = "PREFIX=\${out}";
 

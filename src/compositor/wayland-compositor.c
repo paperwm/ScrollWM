@@ -1,6 +1,7 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
 #include <clutter/clutter.h>
+#include <clutter/wayland/clutter-wayland.h>
 #include <clutter/wayland/clutter-wayland-compositor.h>
 #include <clutter/wayland/clutter-wayland-surface.h>
 
@@ -28,6 +29,7 @@ void trace(int line, const char *func) {
 #define TF trace(__LINE__, __func__)
 
 struct wl_display *display;
+struct wl_seat *seat;
 static int pointer_x, pointer_y;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
@@ -124,14 +126,18 @@ static void surface_commit (struct wl_client *client, struct wl_resource *resour
 	if (surface->pending_buffer == NULL)
 		return;
 
-	GError *error; 
+	GError *error;
 
+    TF;
 	ClutterActor *actor = surface->actor;
+    TF;
 	clutter_wayland_surface_attach_buffer((ClutterWaylandSurface*) actor, surface->pending_buffer, &error);
 
+    TF;
 	if(surface->buffer != NULL)
 		wl_buffer_send_release (surface->buffer);
 
+    TF;
 	surface->buffer = surface->pending_buffer;
 
 	TF;
@@ -266,7 +272,7 @@ static void xdg_surface_resize (struct wl_client *client, struct wl_resource *re
 	
 }
 static void xdg_surface_ack_configure (struct wl_client *client, struct wl_resource *resource, uint32_t serial) {
-	
+
 }
 static void xdg_surface_set_window_geometry (struct wl_client *client, struct wl_resource *resource, int32_t x, int32_t y, int32_t width, int32_t height) {
 	
@@ -440,19 +446,19 @@ wayland_event_source_new (struct wl_display *display)
 						      sizeof (WaylandEventSource));
 	source->display = display;
 	g_source_add_unix_fd (&source->source,
-			      wl_event_loop_get_fd (loop),
-			      G_IO_IN | G_IO_ERR);
+                          wl_event_loop_get_fd (loop),
+                          G_IO_IN | G_IO_ERR);
 
 	return &source->source;
 }
 
 void after_paint(ClutterStage *stage, gpointer data)
 {
-	TF;
+	/* TF; */
 	struct surface *surface;
 	wl_list_for_each(surface, &surfaces, link) {
 		if (surface->frame_callback) {
-			TF;
+			/* TF; */
 			wl_callback_send_done (surface->frame_callback, g_get_monotonic_time()/1000);
 			wl_resource_destroy (surface->frame_callback);
 			surface->frame_callback = NULL;
@@ -462,13 +468,15 @@ void after_paint(ClutterStage *stage, gpointer data)
 }
 
 
-int main () {
+int main (int argc, char **argv) {
 
+    printf("argc: %d\n", argc);
+    printf("argv: %s\n", argv[0]);
 
 	wl_list_init (&clients);
 	wl_list_init (&surfaces);
 	display = wl_display_create ();
-
+	clutter_wayland_set_compositor_display(display);
 
 	GSource *wayland_event_source;
 
@@ -476,9 +484,13 @@ int main () {
 	wayland_event_source = wayland_event_source_new (display);
 	g_source_attach (wayland_event_source, NULL);
 
-	clutter_wayland_set_compositor_display(display);
+    clutter_set_windowing_backend (CLUTTER_WINDOWING_EGL);
 
 	wl_display_add_socket_auto (display);
+
+    TF;
+    clutter_init(&argc, &argv);
+
 	wl_global_create (display, &wl_compositor_interface, 3, NULL, &compositor_bind);
 	wl_global_create (display, &wl_shell_interface, 1, NULL, &shell_bind);
 	wl_global_create (display, &xdg_shell_interface, 1, NULL, &xdg_shell_bind);
@@ -494,14 +506,47 @@ int main () {
 	// clutter
 	// gjs
 
-	clutter_init(0, NULL);
 	stage = clutter_stage_new ();
-	/* clutter_stage_set_user_resizable(stage, TRUE); */
+	clutter_stage_set_user_resizable(stage, TRUE);
 	clutter_actor_show(stage);
 
 	scroll = clutter_scroll_actor_new();
 	clutter_actor_add_child(stage,scroll);
 	clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());
+
+
+    ClutterDeviceManager *device_manager =
+      clutter_device_manager_get_default();
+
+    GSList *devices =
+      clutter_device_manager_list_devices (device_manager);
+
+    ClutterInputDevice *input =
+      clutter_device_manager_get_core_device(device_manager, CLUTTER_POINTER_DEVICE);
+    ClutterInputDevice *keyboard =
+      clutter_device_manager_get_core_device(device_manager, CLUTTER_KEYBOARD_DEVICE);
+
+    struct wl_seat *pointer = clutter_wayland_input_device_get_wl_seat(input);
+    struct wl_seat *wl_keyboard = clutter_wayland_input_device_get_wl_seat(keyboard);
+
+    if (pointer == NULL)
+      printf("pointer is null\n");
+    if (wl_keyboard == NULL)
+      printf("wl_keyboard is null\n");
+
+    if (pointer == keyboard) {
+      printf("pointer and keyboard on same seat\n");
+    } else {
+      printf("pointer and keyboard is not on the same seat\n");
+    }
+
+    guint length = g_list_length(devices);
+    printf("length: %d\n", length);
+    for (int i=0; i < length; i++) {
+      GSList *list = g_list_nth(devices, i);
+      ClutterInputDevice *device = list->data;
+      printf("device: %s\n", clutter_input_device_get_device_name(device));
+    }
 
 	GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
