@@ -477,6 +477,7 @@ int main (int argc, char **argv) {
 	wl_list_init (&surfaces);
 	display = wl_display_create ();
 	clutter_wayland_set_compositor_display(display);
+  clutter_set_windowing_backend ("eglnative");
 
 	GSource *wayland_event_source;
 
@@ -484,12 +485,6 @@ int main (int argc, char **argv) {
 	wayland_event_source = wayland_event_source_new (display);
 	g_source_attach (wayland_event_source, NULL);
 
-    clutter_set_windowing_backend (CLUTTER_WINDOWING_EGL);
-
-	wl_display_add_socket_auto (display);
-
-    TF;
-    clutter_init(&argc, &argv);
 
 	wl_global_create (display, &wl_compositor_interface, 3, NULL, &compositor_bind);
 	wl_global_create (display, &wl_shell_interface, 1, NULL, &shell_bind);
@@ -505,6 +500,11 @@ int main (int argc, char **argv) {
 	// stage
 	// clutter
 	// gjs
+
+
+  clutter_init(&argc, &argv);
+
+  wl_display_add_socket_auto (display);
 
 	stage = clutter_stage_new ();
 	clutter_stage_set_user_resizable(stage, TRUE);

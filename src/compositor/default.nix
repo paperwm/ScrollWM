@@ -1,7 +1,8 @@
 with import ~/nixpkgs {};
 
 let
-  clutter = callPackage ~/nixpkgs/pkgs/development/libraries/clutter { waylandSupport = true; };
+  # Clutter with proper wayland support
+  clutter = callPackage ../../clutter.nix {  };
 in
 
 stdenv.mkDerivation rec {
