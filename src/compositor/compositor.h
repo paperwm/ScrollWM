@@ -21,22 +21,23 @@ extern struct wl_display *display;
 extern ClutterActor *scroll;
 
 struct surface {
-	struct wl_resource *surface;
-	struct wl_resource *xdg_surface;
-	struct wl_resource *buffer;
-	struct wl_resource *pending_buffer;
-	struct wl_resource *frame_callback;
-	int x, y;
-	ClutterActor *actor;
-	struct client *client;
-	struct wl_list link;
+    struct wl_resource *surface;
+    struct wl_resource *xdg_surface;
+    struct wl_resource *xdg_toplevel_surface;
+    struct wl_resource *buffer;
+    struct wl_resource *pending_buffer;
+    struct wl_resource *frame_callback;
+    int x, y;
+    ClutterActor *actor;
+    struct client *client;
+    struct wl_list link;
 };
 
 struct client {
-	struct wl_client *client;
-	struct wl_resource *pointer;
-	struct wl_resource *keyboard;
-	struct wl_list link;
+    struct wl_client *client;
+    struct wl_resource *pointer;
+    struct wl_resource *keyboard;
+    struct wl_list link;
 };
 
 extern void xdg_bind_init();

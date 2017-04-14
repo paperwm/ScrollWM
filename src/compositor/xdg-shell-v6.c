@@ -290,6 +290,9 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
                                     &zxdg_toplevel_v6_interface_impl,
                                     id,
                                     NULL);
+
+    struct surface *surface = wl_resource_get_user_data(resource);
+    surface->xdg_toplevel_surface = res;
 }
 
 /**
@@ -452,14 +455,17 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
                                 uint32_t id,
                                 struct wl_resource *surface_res) {
 
+    struct surface *surface = wl_resource_get_user_data(surface_res);
+
     struct wl_resource *res =
         wl_resource_create (client, &zxdg_surface_v6_interface, 1, id);
     wl_resource_set_implementation (res,
                                     &zxdg_surface_v6_interface_impl,
-                                    surface_res,
+                                    surface,
                                     NULL);
 
-    struct surface *surface = wl_resource_get_user_data(surface_res);
+    surface->xdg_surface = res;
+
     clutter_actor_add_child(scroll, surface->actor);
     clutter_actor_set_reactive(surface->actor, TRUE);
 
