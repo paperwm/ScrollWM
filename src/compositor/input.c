@@ -35,6 +35,8 @@ forward_key_event(ClutterActor *actor, ClutterKeyEvent *event, gpointer data, in
     if(client->keyboard) {
         uint32_t serial = wl_display_next_serial(display);
         
+        wl_keyboard_send_modifiers(client->keyboard, serial, event->modifier_state, 0, 0, 0);
+        serial = wl_display_next_serial(display);
         // -8 is necessary to align keycodes for some reason (see comment for
         // -WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
         wl_keyboard_send_key(client->keyboard, serial, event->time, event->hardware_keycode-8, state);
