@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
 
   buildInputs =
     with xorg; [ libX11 mesa libXext libXfixes libXdamage libXcomposite libXi ] ++
-    [cogl gobjectIntrospection atk pango json_glib cairo clutter pkgconfig xwayland wayland wayland-protocols ];
+    [cogl gnome3.gjs gobjectIntrospection atk pango json_glib cairo clutter pkgconfig xwayland wayland wayland-protocols ];
 
   installFlags = "PREFIX=\${out}";
 

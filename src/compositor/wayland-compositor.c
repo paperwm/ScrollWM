@@ -1,6 +1,8 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
 #include "compositor.h"
+#include "js.h"
+
 void info(int line, char *func, char *message) {
     printf("%s:%d %s\n", func, line, message);
 }
@@ -596,6 +598,13 @@ main (int argc, char **argv) {
     g_signal_connect(stage, "after-paint", G_CALLBACK(after_paint), loop);
 
     g_signal_connect(stage, "activate", G_CALLBACK(activate_stage), loop);
+
+    if(argc > 1) {
+        js_init();
+        GError *error = NULL;
+        int status;
+        gjs_context_eval_file(js_context, argv[1], status, &error);
+    }
 
     g_main_loop_run (loop);
 
