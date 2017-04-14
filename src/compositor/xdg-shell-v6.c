@@ -509,24 +509,6 @@ extern struct zxdg_popup_v6_interface zxdg_popup_v6_interface_impl = {
     .grab = zxdg_popup_grab
 };
 
-
-extern void
-zxdg_toplevel_bind(struct wl_client *client,
-                   void *data, uint32_t version,
-                   uint32_t id) {
-    struct wl_resource *resource = wl_resource_create (client, &zxdg_toplevel_v6_interface, 1, id);
-    wl_resource_set_implementation (resource, &zxdg_toplevel_v6_interface_impl, NULL, NULL);
-}
-
-extern void
-zxdg_surface_bind(struct wl_client *client,
-                  void *data,
-                  uint32_t version,
-                  uint32_t id) {
-    struct wl_resource *resource = wl_resource_create (client, &zxdg_surface_v6_interface, 1, id);
-    wl_resource_set_implementation (resource, &zxdg_surface_v6_interface_impl, NULL, NULL);
-}
-
 extern void
 zxdg_shell_bind(struct wl_client *client,
                 void *data,
@@ -538,7 +520,5 @@ zxdg_shell_bind(struct wl_client *client,
 
 void
 xdg_bind_init() {
-  wl_global_create(display, &zxdg_surface_v6_interface, 1, NULL, &zxdg_surface_bind);
-  wl_global_create(display, &zxdg_shell_v6_interface, 1, NULL, &zxdg_shell_bind);
-  wl_global_create(display, &zxdg_toplevel_v6_interface, 1, NULL, &zxdg_toplevel_bind);
+    wl_global_create(display, &zxdg_shell_v6_interface, 1, NULL, &zxdg_shell_bind);
 }
