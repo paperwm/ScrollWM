@@ -57,6 +57,21 @@ key_release_event(ClutterActor *actor,
 }
 
 gboolean
+motion_event(ClutterActor *actor,
+             ClutterMotionEvent *event,
+             gpointer      data) {
+    gfloat x; gfloat y;
+    clutter_actor_transform_stage_point(actor, event->x, event->y, &x, &y);
+    struct surface *surface = data;
+
+    wl_pointer_send_motion(surface->client->pointer,
+                           event->time,
+                           wl_fixed_from_double(x),
+                           wl_fixed_from_double(y));
+    return TRUE;
+}
+
+gboolean
 enter_event(ClutterActor *actor,
             ClutterCrossingEvent *event,
             gpointer data) {
@@ -66,12 +81,13 @@ enter_event(ClutterActor *actor,
     printf("enter_event: %s (%.2f, %.2f)\n", clutter_actor_get_name(actor), event->x, event->y);
     gboolean event_consumed = FALSE;
     if(client->pointer) {
-        gfloat x = clutter_actor_get_x(actor);
-        gfloat y = clutter_actor_get_y(actor);
         uint32_t serial = wl_display_next_serial(display);
+        gfloat x; gfloat y;
+        clutter_actor_transform_stage_point(actor, event->x, event->y, &x, &y);
         wl_pointer_send_enter(client->pointer, serial, surface->surface,
-                              wl_fixed_from_double(event->x - x),
-                              wl_fixed_from_double(event->y - y));
+                              wl_fixed_from_double(x),
+                              wl_fixed_from_double(y));
+        g_signal_connect(actor, "motion-event", G_CALLBACK(motion_event), surface);
         event_consumed = TRUE;
 
     }
@@ -114,8 +130,8 @@ leave_event(ClutterActor *actor,
     if(client->pointer) {
         uint32_t serial = wl_display_next_serial(display);
         wl_pointer_send_leave(client->pointer, serial, surface->surface);
+        g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(motion_event), surface);
         event_consumed = TRUE;
-
     }
     if(client->keyboard) {
         wl_keyboard_send_leave(client->keyboard,
