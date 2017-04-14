@@ -57,9 +57,39 @@ key_release_event(ClutterActor *actor,
 }
 
 gboolean
+forward_button_event(ClutterActor *actor,
+                     ClutterButtonEvent *event,
+                     gpointer data,
+                     uint32_t state) {
+    struct surface *surface = data;
+    uint32_t serial = wl_display_next_serial(display);
+    wl_pointer_send_button(surface->client->pointer,
+                           serial,
+                           event->time,
+                           // For some reason wayland wants button 1 to be 272
+                           event->button + 271,
+                           state);
+}
+
+gboolean
+button_press_event(ClutterActor *actor,
+                   ClutterButtonEvent *event,
+                   gpointer data) {
+    forward_button_event(actor, event, data, 1);
+}
+
+gboolean
+button_release_event(ClutterActor *actor,
+                   ClutterButtonEvent *event,
+                   gpointer data) {
+    forward_button_event(actor, event, data, 0);
+}
+
+gboolean
 motion_event(ClutterActor *actor,
              ClutterMotionEvent *event,
              gpointer      data) {
+
     gfloat x; gfloat y;
     clutter_actor_transform_stage_point(actor, event->x, event->y, &x, &y);
     struct surface *surface = data;
@@ -88,6 +118,10 @@ enter_event(ClutterActor *actor,
                               wl_fixed_from_double(x),
                               wl_fixed_from_double(y));
         g_signal_connect(actor, "motion-event", G_CALLBACK(motion_event), surface);
+        g_signal_connect(actor, "button-press-event", G_CALLBACK(button_press_event),
+                         surface);
+        g_signal_connect(actor, "button-release-event", G_CALLBACK(button_release_event),
+                         surface);
         event_consumed = TRUE;
 
     }
@@ -131,6 +165,8 @@ leave_event(ClutterActor *actor,
         uint32_t serial = wl_display_next_serial(display);
         wl_pointer_send_leave(client->pointer, serial, surface->surface);
         g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(motion_event), surface);
+        g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(button_press_event), surface);
+        g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(button_release_event), surface);
         event_consumed = TRUE;
     }
     if(client->keyboard) {
