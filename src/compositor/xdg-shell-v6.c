@@ -450,14 +450,18 @@ void
 zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
                                 struct wl_resource *resource,
                                 uint32_t id,
-                                struct wl_resource *surface) {
+                                struct wl_resource *surface_res) {
 
     struct wl_resource *res =
         wl_resource_create (client, &zxdg_surface_v6_interface, 1, id);
     wl_resource_set_implementation (res,
                                     &zxdg_surface_v6_interface_impl,
-                                    surface,
+                                    surface_res,
                                     NULL);
+
+    struct surface *surface = wl_resource_get_user_data(surface_res);
+    clutter_actor_add_child(scroll, surface->actor);
+    clutter_actor_set_reactive(surface->actor, TRUE);
 
     uint32_t serial = wl_display_next_serial(display);
     zxdg_surface_v6_send_configure(res, serial);
@@ -524,4 +528,11 @@ zxdg_shell_bind(struct wl_client *client,
                 uint32_t id) {
     struct wl_resource *resource = wl_resource_create (client, &zxdg_shell_v6_interface, 1, id);
     wl_resource_set_implementation (resource, &zxdg_shell_v6_interface_impl, NULL, NULL);
+}
+
+void
+xdg_bind_init() {
+  wl_global_create(display, &zxdg_surface_v6_interface, 1, NULL, &zxdg_surface_bind);
+  wl_global_create(display, &zxdg_shell_v6_interface, 1, NULL, &zxdg_shell_bind);
+  wl_global_create(display, &zxdg_toplevel_v6_interface, 1, NULL, &zxdg_toplevel_bind);
 }

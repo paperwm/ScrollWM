@@ -1,21 +1,6 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
-#include <clutter/clutter.h>
-#include <clutter/wayland/clutter-wayland.h>
-#include <clutter/wayland/clutter-wayland-compositor.h>
-#include <clutter/wayland/clutter-wayland-surface.h>
-
-#include <string.h>
-#include <glib.h>
-
-#include <wayland-server.h>
-#include "xdg-shell-unstable-v5-server-protocol.h"
-#include "xdg-shell-unstable-v6-server-protocol.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-
-#include "xdg-shell-v6.c"
+#include "compositor.h"
 
 void info(int line, char *func, char *message) {
 	printf("%s:%d %s\n", func, line, message);
@@ -28,21 +13,16 @@ void trace(int line, const char *func) {
 #define T // trace(__LINE__, __func__)
 #define TF trace(__LINE__, __func__)
 
+static struct wl_list clients;
+static struct wl_list surfaces;
+
 struct wl_display *display;
 struct wl_seat *seat;
 static int pointer_x, pointer_y;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
 static ClutterActor *stage = NULL;
-static ClutterActor *scroll = NULL;
-
-struct client {
-	struct wl_client *client;
-	struct wl_resource *pointer;
-	struct wl_resource *keyboard;
-	struct wl_list link;
-};
-static struct wl_list clients;
+ClutterActor *scroll = NULL;
 
 static struct
 client *get_client (struct wl_client *_client) {
@@ -56,18 +36,6 @@ client *get_client (struct wl_client *_client) {
 	return client;
 }
 
-struct surface {
-	struct wl_resource *surface;
-	struct wl_resource *xdg_surface;
-	struct wl_resource *buffer;
-	struct wl_resource *pending_buffer;
-	struct wl_resource *frame_callback;
-	int x, y;
-	ClutterActor *actor;
-	struct client *client;
-	struct wl_list link;
-};
-static struct wl_list surfaces;
 static struct surface *cursor = NULL;
 static struct surface *moving_surface = NULL;
 static struct surface *active_surface = NULL;
@@ -257,13 +225,11 @@ compositor_create_surface(struct wl_client *client,
 
 	surface->surface = wl_resource_create (client, &wl_surface_interface, 3, id);
 	surface->actor = clutter_wayland_surface_new((struct wl_surface*) surface->surface);
-	clutter_actor_set_reactive(surface->actor, TRUE);
 
 	wl_resource_set_implementation (surface->surface, &surface_interface, surface, &delete_surface);
 	surface->client = get_client (client);
 
 	g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface->client);
-	clutter_actor_add_child(scroll, surface->actor);
 
 	wl_list_insert (&surfaces, &surface->link);
 }
@@ -776,13 +742,10 @@ main (int argc, char **argv) {
 	wl_global_create(display, &wl_compositor_interface, 3, NULL, &compositor_bind);
 	wl_global_create(display, &wl_shell_interface, 1, NULL, &shell_bind);
 	wl_global_create(display, &xdg_shell_interface, 1, NULL, &xdg_shell_bind);
-
-	wl_global_create(display, &zxdg_surface_v6_interface, 1, NULL, &zxdg_surface_bind);
-	wl_global_create(display, &zxdg_shell_v6_interface, 1, NULL, &zxdg_shell_bind);
-	wl_global_create(display, &zxdg_toplevel_v6_interface, 1, NULL, &zxdg_toplevel_bind);
-
 	wl_global_create(display, &wl_seat_interface, 1, NULL, &seat_bind);
 	wl_display_init_shm(display);
+
+    xdg_bind_init();
 
 	// stage
 	// clutter
