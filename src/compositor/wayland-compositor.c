@@ -795,7 +795,12 @@ after_paint(ClutterStage *stage,
     }
 
 }
-
+void
+activate_stage(ClutterStage *stage,
+               gpointer data) {
+    clutter_actor_set_height(scroll, clutter_actor_get_height(stage));
+    clutter_actor_set_width(scroll, clutter_actor_get_width(stage));
+}
 
 int
 main (int argc, char **argv) {
@@ -878,6 +883,8 @@ main (int argc, char **argv) {
     GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
     g_signal_connect(stage, "after-paint", G_CALLBACK(after_paint), loop);
+
+    g_signal_connect(stage, "activate", G_CALLBACK(activate_stage), loop);
 
     g_main_loop_run (loop);
 
