@@ -276,6 +276,37 @@ enter_event(ClutterActor *actor,
     return event_consumed;
 }
 
+gboolean
+leave_event(ClutterActor *actor,
+            ClutterEvent *event,
+            gpointer      data) {
+
+    struct surface *surface = data;
+    struct client *client = surface->client;
+    gboolean event_consumed = FALSE;
+    if(client->pointer) {
+        uint32_t serial = wl_display_next_serial(display);
+        wl_pointer_send_leave(client->pointer, serial, surface->surface);
+        event_consumed = TRUE;
+
+    }
+    if(client->keyboard) {
+        wl_keyboard_send_leave(client->keyboard,
+                               wl_display_next_serial(display),
+                               surface->surface);
+
+        struct wl_array states;
+        wl_array_init(&states);
+        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
+        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
+
+        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+        clutter_stage_set_key_focus(stage, NULL);
+        event_consumed = TRUE;
+    }
+    return event_consumed;
+
+}
 
 // compositor
 static void
@@ -293,6 +324,7 @@ compositor_create_surface(struct wl_client *client,
     surface->client = get_client (client);
 
     g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
+    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
     g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
     g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
 
