@@ -1,6 +1,13 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
 #include "compositor.h"
+#include <xkbcommon/xkbcommon.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <stdlib.h>
 
 void info(int line, char *func, char *message) {
     printf("%s:%d %s\n", func, line, message);
@@ -201,7 +208,9 @@ forward_key_event(ClutterActor *actor, ClutterKeyEvent *event, gpointer data, in
     if(client->keyboard) {
         uint32_t serial = wl_display_next_serial(display);
         
-        wl_keyboard_send_key(client->keyboard, serial, event->time, event->hardware_keycode, state);
+        // -8 is necessary to align keycodes for some reason (see comment for
+        // -WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+        wl_keyboard_send_key(client->keyboard, serial, event->time, event->hardware_keycode-8, state);
     }
     
 }
@@ -228,6 +237,7 @@ enter_event(ClutterActor *actor,
     struct surface *surface = data;
     struct client *client = surface->client;
     printf("enter_event: %s (%.2f, %.2f)\n", clutter_actor_get_name(actor), event->x, event->y);
+    gboolean event_consumed = FALSE;
     if(client->pointer) {
         gfloat x = clutter_actor_get_x(actor);
         gfloat y = clutter_actor_get_y(actor);
@@ -235,7 +245,10 @@ enter_event(ClutterActor *actor,
         wl_pointer_send_enter(client->pointer, serial, surface->surface,
                               wl_fixed_from_double(event->x - x),
                               wl_fixed_from_double(event->y - y));
+        event_consumed = TRUE;
 
+    }
+    if(client->keyboard) {
         struct wl_array empty;
         wl_array_init(&empty);
         wl_keyboard_send_modifiers(client->keyboard,
@@ -251,9 +264,9 @@ enter_event(ClutterActor *actor,
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
         clutter_stage_set_key_focus(stage, actor);
-        return TRUE;
+        event_consumed = TRUE;
     }
-    return FALSE;
+    return event_consumed;
 }
 
 
@@ -616,8 +629,9 @@ pointer_set_cursor(struct wl_client *client,
                    struct wl_resource *_surface,
                    int32_t hotspot_x,
                    int32_t hotspot_y) {
-    struct surface *surface = wl_resource_get_user_data (_surface);
-    cursor = surface;
+    /* printf("set_cursor %d\n", _surface); */
+    /* struct surface *surface = wl_resource_get_user_data (_surface); */
+    /* cursor = surface; */
 }
 
 static void
@@ -651,16 +665,34 @@ seat_get_pointer(struct wl_client *client,
 }
 
 static void
+get_keymap(int *fd, int *size) {
+    struct xkb_context *context;
+    struct xkb_keymap *keymap;
+    context = xkb_context_new(0);
+    keymap = xkb_keymap_new_from_names(context, NULL, 0);
+    char *string = xkb_keymap_get_as_string (keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+
+    *size = strlen (string) + 1;
+    char *xdg_runtime_dir = getenv ("XDG_RUNTIME_DIR");
+    *fd = open (xdg_runtime_dir, __O_TMPFILE|O_RDWR|O_EXCL, 0600);
+    ftruncate (*fd, *size);
+    char *map = mmap (NULL, *size, PROT_READ|PROT_WRITE, MAP_SHARED, *fd, 0);
+    strcpy (map, string);
+    munmap (map, *size);
+    free (string);
+}
+
+static void
 seat_get_keyboard(struct wl_client *client,
                   struct wl_resource *resource,
                   uint32_t id) {
     struct wl_resource *keyboard = wl_resource_create (client, &wl_keyboard_interface, 1, id);
-    wl_resource_set_implementation (keyboard, &keyboard_interface, NULL, NULL);
+    wl_resource_set_implementation (keyboard, &keyboard_interface, client, NULL);
     get_client(client)->keyboard = keyboard;
     int fd, size;
-    /* backend_get_keymap (&fd, &size); */
+    get_keymap (&fd, &size);
     wl_keyboard_send_keymap (keyboard, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, fd, size);
-    //close (fd);
+    close (fd);
 }
 
 static void seat_get_touch (struct wl_client *client, struct wl_resource *resource, uint32_t id) {
