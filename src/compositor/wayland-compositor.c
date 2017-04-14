@@ -546,7 +546,7 @@ main (int argc, char **argv) {
 
     wl_display_add_socket_auto(display);
 
-    stage = clutter_stage_new ();
+    stage = clutter_stage_get_default();
     clutter_stage_set_user_resizable(stage, TRUE);
     clutter_actor_show(stage);
 
