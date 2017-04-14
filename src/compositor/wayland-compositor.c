@@ -265,6 +265,11 @@ enter_event(ClutterActor *actor,
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
         clutter_stage_set_key_focus(stage, actor);
         event_consumed = TRUE;
+
+        ClutterPoint point;
+        clutter_actor_get_position(actor, &(point.x), &(point.y));
+        point.x -= 20;
+        clutter_scroll_actor_scroll_to_point (scroll, &point);
     }
     return event_consumed;
 }
@@ -844,6 +849,9 @@ main (int argc, char **argv) {
 
     scroll = clutter_scroll_actor_new();
     clutter_actor_add_child(stage,scroll);
+    clutter_actor_set_easing_duration(scroll, 250);
+    clutter_actor_set_easing_mode(scroll, CLUTTER_EASE_OUT_QUAD);
+
     clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());
 
 
