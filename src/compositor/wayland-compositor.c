@@ -261,6 +261,8 @@ enter_event(ClutterActor *actor,
         wl_array_init(&states);
         uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
         *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
+        s = wl_array_add(&states, sizeof(uint32_t));
+        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
         clutter_stage_set_key_focus(stage, actor);

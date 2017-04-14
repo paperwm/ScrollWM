@@ -293,6 +293,20 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
 
     struct surface *surface = wl_resource_get_user_data(resource);
     surface->xdg_toplevel_surface = res;
+
+    struct wl_array states;
+    wl_array_init(&states);
+    uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
+    *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
+
+    gfloat w;
+    gfloat h;
+    clutter_actor_get_size(scroll, &w, &h);
+
+    printf("scroll height: %.2f\n", h);
+    printf("scroll width: %.2f\n", w);
+
+    zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 500, (int) h, &states);
 }
 
 /**
