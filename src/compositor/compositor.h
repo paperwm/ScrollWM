@@ -42,3 +42,4 @@ struct client {
 };
 
 extern void xdg_bind_init();
+extern void xdg_v5_bind_init();
