@@ -1,14 +1,6 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
 #include "compositor.h"
-#include <xkbcommon/xkbcommon.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <stdlib.h>
-
 void info(int line, char *func, char *message) {
     printf("%s:%d %s\n", func, line, message);
 }
@@ -28,7 +20,7 @@ struct wl_seat *seat;
 static int pointer_x, pointer_y;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
-static ClutterActor *stage = NULL;
+ClutterActor *stage = NULL;
 ClutterActor *scroll = NULL;
 
 static struct client
@@ -200,113 +192,6 @@ region_subtract(struct wl_client *client,
 
 static struct wl_region_interface region_interface = {&region_destroy, &region_add, &region_subtract};
 
-static gboolean
-forward_key_event(ClutterActor *actor, ClutterKeyEvent *event, gpointer data, int state) {
-    struct surface *surface = data;
-    struct client *client = surface->client;
-
-    if(client->keyboard) {
-        uint32_t serial = wl_display_next_serial(display);
-        
-        // -8 is necessary to align keycodes for some reason (see comment for
-        // -WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
-        wl_keyboard_send_key(client->keyboard, serial, event->time, event->hardware_keycode-8, state);
-    }
-    
-}
-
-static gboolean
-key_press_event(ClutterActor *actor,
-            ClutterKeyEvent *event,
-            gpointer data) {
-    forward_key_event(actor, event, data, 1);
-}
-
-static gboolean
-key_release_event(ClutterActor *actor,
-                  ClutterKeyEvent *event,
-                  gpointer data) {
-    forward_key_event(actor, event, data, 0);
-}
-
-static gboolean
-enter_event(ClutterActor *actor,
-            ClutterCrossingEvent *event,
-            gpointer data) {
-
-    struct surface *surface = data;
-    struct client *client = surface->client;
-    printf("enter_event: %s (%.2f, %.2f)\n", clutter_actor_get_name(actor), event->x, event->y);
-    gboolean event_consumed = FALSE;
-    if(client->pointer) {
-        gfloat x = clutter_actor_get_x(actor);
-        gfloat y = clutter_actor_get_y(actor);
-        uint32_t serial = wl_display_next_serial(display);
-        wl_pointer_send_enter(client->pointer, serial, surface->surface,
-                              wl_fixed_from_double(event->x - x),
-                              wl_fixed_from_double(event->y - y));
-        event_consumed = TRUE;
-
-    }
-    if(client->keyboard) {
-        struct wl_array empty;
-        wl_array_init(&empty);
-        wl_keyboard_send_modifiers(client->keyboard,
-                                   wl_display_next_serial(display),
-                                   0, 0,
-                                   0, 0);
-        wl_keyboard_send_enter(client->keyboard, wl_display_next_serial(display), surface->surface, &empty);
-
-        struct wl_array states;
-        wl_array_init(&states);
-        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
-        s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
-
-        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
-        clutter_stage_set_key_focus(stage, actor);
-        event_consumed = TRUE;
-
-        ClutterPoint point;
-        clutter_actor_get_position(actor, &(point.x), &(point.y));
-        point.x -= 20;
-        clutter_scroll_actor_scroll_to_point (scroll, &point);
-    }
-    return event_consumed;
-}
-
-gboolean
-leave_event(ClutterActor *actor,
-            ClutterEvent *event,
-            gpointer      data) {
-
-    struct surface *surface = data;
-    struct client *client = surface->client;
-    gboolean event_consumed = FALSE;
-    if(client->pointer) {
-        uint32_t serial = wl_display_next_serial(display);
-        wl_pointer_send_leave(client->pointer, serial, surface->surface);
-        event_consumed = TRUE;
-
-    }
-    if(client->keyboard) {
-        wl_keyboard_send_leave(client->keyboard,
-                               wl_display_next_serial(display),
-                               surface->surface);
-
-        struct wl_array states;
-        wl_array_init(&states);
-        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
-
-        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
-        clutter_stage_set_key_focus(stage, NULL);
-        event_consumed = TRUE;
-    }
-    return event_consumed;
-
-}
 
 // compositor
 static void
@@ -322,11 +207,6 @@ compositor_create_surface(struct wl_client *client,
 
     wl_resource_set_implementation (surface->surface, &surface_interface, surface, &delete_surface);
     surface->client = get_client (client);
-
-    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
-    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
-    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
-    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
 
     wl_list_insert (&surfaces, &surface->link);
 }
@@ -701,24 +581,6 @@ seat_get_pointer(struct wl_client *client,
     struct wl_resource *pointer = wl_resource_create (client, &wl_pointer_interface, 1, id);
     wl_resource_set_implementation (pointer, &pointer_interface, NULL, NULL);
     get_client(client)->pointer = pointer;
-}
-
-static void
-get_keymap(int *fd, int *size) {
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
-    context = xkb_context_new(0);
-    keymap = xkb_keymap_new_from_names(context, NULL, 0);
-    char *string = xkb_keymap_get_as_string (keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
-
-    *size = strlen (string) + 1;
-    char *xdg_runtime_dir = getenv ("XDG_RUNTIME_DIR");
-    *fd = open (xdg_runtime_dir, __O_TMPFILE|O_RDWR|O_EXCL, 0600);
-    ftruncate (*fd, *size);
-    char *map = mmap (NULL, *size, PROT_READ|PROT_WRITE, MAP_SHARED, *fd, 0);
-    strcpy (map, string);
-    munmap (map, *size);
-    free (string);
 }
 
 static void

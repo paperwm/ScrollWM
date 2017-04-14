@@ -2,6 +2,7 @@
 #include <wayland-server.h>
 #include "xdg-shell-unstable-v6-server-protocol.h"
 #include "compositor.h"
+#include "input.h"
 
 // toplevel
 
@@ -293,6 +294,12 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
 
     struct surface *surface = wl_resource_get_user_data(resource);
     surface->xdg_toplevel_surface = res;
+
+
+    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
+    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
+    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
+    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
 
     struct wl_array states;
     wl_array_init(&states);

@@ -18,6 +18,7 @@
 
 
 extern struct wl_display *display;
+extern ClutterActor *stage;
 extern ClutterActor *scroll;
 
 struct surface {
