@@ -600,8 +600,10 @@ main (int argc, char **argv) {
 
     g_signal_connect(stage, "activate", G_CALLBACK(activate_stage), loop);
 
+
+    js_init();
+
     if(argc > 1) {
-        js_init();
         GError *error = NULL;
         int status;
         gjs_context_eval_file(js_context, argv[1], status, &error);

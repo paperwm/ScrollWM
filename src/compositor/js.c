@@ -16,4 +16,9 @@ js_init() {
     js_context = g_object_new (GJS_TYPE_CONTEXT,
                                /* "search-path", search_path, */
                                NULL);
+
+    // Expose a "eval" dbus service
+    GError *error = NULL;
+    int status;
+    gjs_context_eval_file(js_context, "shellDBus.js", status, &error);
 }
