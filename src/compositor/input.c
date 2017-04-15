@@ -128,29 +128,8 @@ enter_event(ClutterActor *actor,
 
     }
     if(client->keyboard) {
-        struct wl_array empty;
-        wl_array_init(&empty);
-        wl_keyboard_send_modifiers(client->keyboard,
-                                   wl_display_next_serial(display),
-                                   0, 0,
-                                   0, 0);
-        wl_keyboard_send_enter(client->keyboard, wl_display_next_serial(display), surface->surface, &empty);
-
-        struct wl_array states;
-        wl_array_init(&states);
-        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
-        s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
-
-        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
-        clutter_stage_set_key_focus(stage, actor);
-        event_consumed = TRUE;
-
-        ClutterPoint point;
-        clutter_actor_get_position(actor, &(point.x), &(point.y));
-        point.x -= 20;
-        clutter_scroll_actor_scroll_to_point (scroll, &point);
+        // stand in for proper focus handling
+        key_focus_in(actor, data);
     }
     return event_consumed;
 }
@@ -172,6 +151,50 @@ leave_event(ClutterActor *actor,
         event_consumed = TRUE;
     }
     if(client->keyboard) {
+        // stand in for proper focus handling
+        key_focus_out(actor, data);
+    }
+    return event_consumed;
+}
+
+void
+key_focus_in(ClutterActor *actor,
+             gpointer      user_data) {
+
+    struct surface *surface = user_data;
+    struct client *client = surface->client;
+    if(client->keyboard) {
+        struct wl_array empty;
+        wl_array_init(&empty);
+        wl_keyboard_send_modifiers(client->keyboard,
+                                   wl_display_next_serial(display),
+                                   0, 0,
+                                   0, 0);
+        wl_keyboard_send_enter(client->keyboard, wl_display_next_serial(display), surface->surface, &empty);
+
+        struct wl_array states;
+        wl_array_init(&states);
+        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
+        *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
+        s = wl_array_add(&states, sizeof(uint32_t));
+        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
+
+        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+        clutter_stage_set_key_focus(stage, actor);
+
+        ClutterPoint point;
+        clutter_actor_get_position(actor, &(point.x), &(point.y));
+        point.x -= 20;
+        clutter_scroll_actor_scroll_to_point (scroll, &point);
+    }
+}
+
+void
+key_focus_out(ClutterActor *actor,
+              gpointer      user_data) {
+    struct surface *surface = user_data;
+    struct client *client = surface->client;
+    if(client->keyboard) {
         wl_keyboard_send_leave(client->keyboard,
                                wl_display_next_serial(display),
                                surface->surface);
@@ -183,8 +206,5 @@ leave_event(ClutterActor *actor,
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
         clutter_stage_set_key_focus(stage, NULL);
-        event_consumed = TRUE;
     }
-    return event_consumed;
-
 }

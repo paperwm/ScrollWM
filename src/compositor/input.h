@@ -21,3 +21,10 @@ extern gboolean
 leave_event(ClutterActor *actor,
             ClutterEvent *event,
             gpointer      data);
+
+void
+key_focus_in(ClutterActor *actor,
+             gpointer      user_data);
+void
+key_focus_out(ClutterActor *actor,
+              gpointer      user_data);
