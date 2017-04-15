@@ -556,6 +556,7 @@ main (int argc, char **argv) {
     clutter_actor_add_child(stage,scroll);
     clutter_actor_set_easing_duration(scroll, 250);
     clutter_actor_set_easing_mode(scroll, CLUTTER_EASE_OUT_QUAD);
+    clutter_scroll_actor_set_scroll_mode (scroll, CLUTTER_SCROLL_HORIZONTALLY);
 
     clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());
 
