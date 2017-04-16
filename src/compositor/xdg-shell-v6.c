@@ -295,14 +295,6 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
     struct surface *surface = wl_resource_get_user_data(resource);
     surface->xdg_toplevel_surface = res;
 
-
-    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
-    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
-    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
-    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
-    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
-    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
-
     struct wl_array states;
     wl_array_init(&states);
     uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
@@ -491,6 +483,13 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
 
     clutter_actor_add_child(scroll, surface->actor);
     clutter_actor_set_reactive(surface->actor, TRUE);
+
+    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
+    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
+    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
+    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
+    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
+    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
 
     uint32_t serial = wl_display_next_serial(display);
     zxdg_surface_v6_send_configure(res, serial);
