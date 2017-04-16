@@ -300,8 +300,8 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
     g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
     g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
     g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
-    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface->surface);
-    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface->surface);
+    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
+    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
 
     struct wl_array states;
     wl_array_init(&states);

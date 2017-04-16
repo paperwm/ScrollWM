@@ -129,7 +129,7 @@ enter_event(ClutterActor *actor,
     }
     if(client->keyboard) {
         // stand in for proper focus handling
-        key_focus_in(actor, data);
+        clutter_actor_grab_key_focus(actor);
     }
     return event_consumed;
 }
@@ -152,7 +152,7 @@ leave_event(ClutterActor *actor,
     }
     if(client->keyboard) {
         // stand in for proper focus handling
-        key_focus_out(actor, data);
+        clutter_actor_grab_key_focus(NULL);
     }
     return event_consumed;
 }
@@ -180,7 +180,6 @@ key_focus_in(ClutterActor *actor,
         *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
-        clutter_stage_set_key_focus(stage, actor);
 
         ClutterPoint point;
         clutter_actor_get_position(actor, &(point.x), &(point.y));
@@ -205,6 +204,5 @@ key_focus_out(ClutterActor *actor,
         *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
-        clutter_stage_set_key_focus(stage, NULL);
     }
 }
