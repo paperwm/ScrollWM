@@ -20,6 +20,7 @@
 extern struct wl_display *display;
 extern ClutterActor *stage;
 extern ClutterActor *scroll;
+extern guint *new_window_signal;
 
 struct surface {
     struct wl_resource *surface;

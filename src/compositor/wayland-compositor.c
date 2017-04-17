@@ -23,6 +23,7 @@ static struct modifier_state modifier_state;
 static char redraw_needed = 0;
 ClutterActor *stage = NULL;
 ClutterActor *scroll = NULL;
+guint *new_window_signal;
 
 static struct client
 *get_client (struct wl_client *_client) {
@@ -600,6 +601,18 @@ main (int argc, char **argv) {
 
     g_signal_connect(stage, "activate", G_CALLBACK(activate_stage), loop);
 
+
+    // Set up signal so we can handle layout in js
+    new_window_signal = g_signal_new("new-window",
+                                     CLUTTER_TYPE_STAGE,
+                                     G_SIGNAL_RUN_LAST,
+                                     0,
+                                     NULL, NULL,
+                                     NULL,
+                                     G_TYPE_NONE,
+                                     1,
+                                     CLUTTER_WAYLAND_TYPE_SURFACE
+                                     );
 
     js_init();
 

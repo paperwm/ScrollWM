@@ -503,6 +503,8 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
     g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
     g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
 
+    g_signal_emit(stage, new_window_signal, 0, surface->actor);
+
     uint32_t serial = wl_display_next_serial(display);
     zxdg_surface_v6_send_configure(res, serial);
 }
