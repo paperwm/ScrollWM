@@ -37,19 +37,15 @@ const ScrollWMDBus = new Lang.Class({
      *
      */
     Eval: function(code) {
-        let returnValue;
-        let success;
+        let result;
+        let success = true;
         try {
-            returnValue = JSON.stringify(eval(code));
-            // A hack; DBus doesn't have null/undefined
-            if (returnValue == undefined)
-                returnValue = '';
-            success = true;
-        } catch (e) {
-            returnValue = '' + e;
+            result = eval(code);
+        } catch(e) {
+            result = '' + e;
             success = false;
         }
-        return [success, returnValue];
+        return [success, result === undefined ? "" : result.toString()];
     },
 
     ShellVersion: "0.1"
