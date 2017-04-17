@@ -129,7 +129,7 @@ enter_event(ClutterActor *actor,
     }
     if(client->keyboard) {
         // stand in for proper focus handling
-        clutter_actor_grab_key_focus(actor);
+        clutter_stage_set_key_focus(stage, actor);
     }
     return event_consumed;
 }
@@ -152,7 +152,7 @@ leave_event(ClutterActor *actor,
     }
     if(client->keyboard) {
         // stand in for proper focus handling
-        clutter_actor_grab_key_focus(NULL);
+        clutter_stage_set_key_focus(stage, NULL);
     }
     return event_consumed;
 }
