@@ -28,3 +28,9 @@ key_focus_in(ClutterActor *actor,
 void
 key_focus_out(ClutterActor *actor,
               gpointer      user_data);
+
+void
+allocation_changed(ClutterActor          *actor,
+                   ClutterActorBox       *box,
+                   ClutterAllocationFlags flags,
+                   gpointer               user_data);

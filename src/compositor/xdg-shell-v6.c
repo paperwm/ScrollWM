@@ -294,6 +294,8 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
 
     struct surface *surface = wl_resource_get_user_data(resource);
     surface->xdg_toplevel_surface = res;
+    // Request a new size when the actor's size changes
+    g_signal_connect(surface->actor, "allocation-changed", G_CALLBACK(allocation_changed), surface);
 }
 
 /**

@@ -180,7 +180,10 @@ key_focus_in(ClutterActor *actor,
             s = wl_array_add(&states, sizeof(uint32_t));
             *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
-            zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+            gfloat width; gfloat height;
+            clutter_actor_get_size(actor, &width, &height);
+
+            zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, (int) width, (int) height, &states);
         }
     }
 }
@@ -195,11 +198,38 @@ key_focus_out(ClutterActor *actor,
                                wl_display_next_serial(display),
                                surface->surface);
 
+        if (surface->xdg_toplevel_surface != NULL) {
+            struct wl_array states;
+            wl_array_init(&states);
+            uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
+            *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
+
+            gfloat width; gfloat height;
+            clutter_actor_get_size(actor, &width, &height);
+
+            zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, (int) width, (int) height, &states);
+        }
+    }
+}
+
+void
+allocation_changed(ClutterActor          *actor,
+                   ClutterActorBox       *box,
+                   ClutterAllocationFlags flags,
+                   gpointer               user_data) {
+
+    struct surface *surface = user_data;
+    if (surface->xdg_toplevel_surface != NULL) {
+
+        gfloat width; gfloat height;
+        clutter_actor_box_get_size(box, &width, &height);
+
         struct wl_array states;
         wl_array_init(&states);
         uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
         *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
-        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+        printf("resize xdg surface");
+        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, (int) width, (int) height, &states);
     }
 }
