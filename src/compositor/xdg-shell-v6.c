@@ -307,7 +307,7 @@ zxdg_surface_get_toplevel_impl(struct wl_client *client,
     printf("scroll height: %.2f\n", h);
     printf("scroll width: %.2f\n", w);
 
-    zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 500, (int) h, &states);
+    zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 500, (int) h - 8, &states);
 }
 
 /**
@@ -481,8 +481,20 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
 
     surface->xdg_surface = res;
 
-    clutter_actor_add_child(scroll, surface->actor);
+    ClutterActor *decoration = clutter_actor_new();
+    ClutterColor color;
+    clutter_color_from_string(&color, "grey");
+    clutter_actor_set_background_color(decoration, &color);
+    clutter_actor_add_child(decoration, surface->actor);
+    clutter_actor_add_child(scroll, decoration);
     clutter_actor_set_reactive(surface->actor, TRUE);
+
+    clutter_actor_set_content_gravity(decoration, CLUTTER_CONTENT_GRAVITY_TOP | CLUTTER_CONTENT_GRAVITY_BOTTOM);
+
+    clutter_actor_set_margin_top(surface->actor, 4);
+    clutter_actor_set_margin_bottom(surface->actor, 4);
+    clutter_actor_set_margin_left(surface->actor, 4);
+    clutter_actor_set_margin_right(surface->actor, 4);
 
     g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
     g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
