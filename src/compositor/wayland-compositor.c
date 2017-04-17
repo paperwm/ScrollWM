@@ -22,7 +22,6 @@ struct wl_seat *seat;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
 ClutterActor *stage = NULL;
-ClutterActor *scroll = NULL;
 guint *new_window_signal;
 
 static struct client
@@ -506,12 +505,6 @@ after_paint(ClutterStage *stage,
     }
 
 }
-void
-activate_stage(ClutterStage *stage,
-               gpointer data) {
-    clutter_actor_set_height(scroll, clutter_actor_get_height(stage));
-    clutter_actor_set_width(scroll, clutter_actor_get_width(stage));
-}
 
 int
 main (int argc, char **argv) {
@@ -553,15 +546,6 @@ main (int argc, char **argv) {
     clutter_stage_set_user_resizable(stage, TRUE);
     clutter_actor_show(stage);
 
-    scroll = clutter_scroll_actor_new();
-    clutter_actor_add_child(stage,scroll);
-    clutter_actor_set_easing_duration(scroll, 250);
-    clutter_actor_set_easing_mode(scroll, CLUTTER_EASE_OUT_QUAD);
-    clutter_scroll_actor_set_scroll_mode (scroll, CLUTTER_SCROLL_HORIZONTALLY);
-
-    clutter_actor_set_layout_manager(scroll, clutter_box_layout_new());
-
-
     ClutterDeviceManager *device_manager =
         clutter_device_manager_get_default();
 
@@ -598,8 +582,6 @@ main (int argc, char **argv) {
     GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
     g_signal_connect(stage, "after-paint", G_CALLBACK(after_paint), loop);
-
-    g_signal_connect(stage, "activate", G_CALLBACK(activate_stage), loop);
 
 
     // Set up signal so we can handle layout in js

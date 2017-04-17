@@ -182,16 +182,6 @@ key_focus_in(ClutterActor *actor,
 
             zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
         }
-
-        ClutterPoint point;
-        ClutterSize size;
-        ClutterActor *parent = clutter_actor_get_parent(surface->actor);
-        ClutterColor color;
-        clutter_color_from_string(&color, "blue");
-        clutter_actor_set_background_color(parent, &color);
-        clutter_actor_get_position(parent, &(point.x), &(point.y));
-        point.x -= 20;
-        clutter_scroll_actor_scroll_to_point (scroll, &point);
     }
 }
 
@@ -209,11 +199,6 @@ key_focus_out(ClutterActor *actor,
         wl_array_init(&states);
         uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
         *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
-
-        ClutterActor *parent = clutter_actor_get_parent(surface->actor);
-        ClutterColor color;
-        clutter_color_from_string(&color, "grey");
-        clutter_actor_set_background_color(parent, &color);
 
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
     }
