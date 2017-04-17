@@ -172,14 +172,16 @@ key_focus_in(ClutterActor *actor,
                                    0, 0);
         wl_keyboard_send_enter(client->keyboard, wl_display_next_serial(display), surface->surface, &empty);
 
-        struct wl_array states;
-        wl_array_init(&states);
-        uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
-        s = wl_array_add(&states, sizeof(uint32_t));
-        *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
+        if (surface->xdg_toplevel_surface != NULL) {
+            struct wl_array states;
+            wl_array_init(&states);
+            uint32_t *s = wl_array_add(&states, sizeof(uint32_t));
+            *s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
+            s = wl_array_add(&states, sizeof(uint32_t));
+            *s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 
-        zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+            zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, 0, 0, &states);
+        }
 
         ClutterPoint point;
         clutter_actor_get_position(actor, &(point.x), &(point.y));
