@@ -43,7 +43,15 @@ margin = new Clutter.Margin({
     bottom: 4
 });
 
-actor = scroll.get_children()[0]
+
+() => {
+    actor.grab_key_focus()
+    actor = scroll.get_children()[2].get_children()[0]
+    [_, vertex.x, absY] = stage.transform_stage_point(actor.x, actor.y)
+    [_, vertex.x, absY, _] = scroll.apply_relative_transform_to_point(stage, new Clutter.Vertex({
+        x: actor.x, y: actor.y, z: 0}));
+}
+
 
 focus = (actor) => {
     actor.grab_key_focus();
