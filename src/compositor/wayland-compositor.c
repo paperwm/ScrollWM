@@ -333,9 +333,13 @@ static void
 shell_get_shell_surface(struct wl_client *client,
                         struct wl_resource *resource,
                         uint32_t id,
-                        struct wl_resource *surface) {
+                        struct wl_resource *wl_surface) {
+
+    struct surface *surface = wl_resource_get_user_data(wl_surface);
     struct wl_resource *shell_surface = wl_resource_create (client, &wl_shell_surface_interface, 1, id);
     wl_resource_set_implementation (shell_surface, &shell_surface_interface, NULL, NULL);
+    setup_signals(surface);
+    g_signal_emit(stage, new_window_signal, 0, surface->actor);
 }
 
 static struct wl_shell_interface shell_interface = {&shell_get_shell_surface};
