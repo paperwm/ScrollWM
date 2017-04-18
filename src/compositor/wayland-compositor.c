@@ -514,6 +514,9 @@ after_paint(ClutterStage *stage,
 int
 main (int argc, char **argv) {
 
+    // Not sure if it's best practice to do this in the main program?
+    js_maybe_generate_gir_and_exit(argc, argv);
+
     printf("argc: %d\n", argc);
     printf("argv: %s\n", argv[0]);
 

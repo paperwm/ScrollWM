@@ -3,9 +3,9 @@
 
 #include <gjs/gjs.h>
 #include <gio/gio.h>
-#include <girepository.h>
 
 extern void js_init();
+extern void js_maybe_generate_gir_and_exit(int argc, char **argv);
 
 extern GjsContext *js_context;
 

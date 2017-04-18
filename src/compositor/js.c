@@ -1,6 +1,7 @@
-
 #include "compositor.h"
 #include "js.h"
+
+#include <girepository.h>
 
 GjsContext *js_context;
 
@@ -22,3 +23,24 @@ js_init() {
     int status;
     gjs_context_eval_file(js_context, "shellDBus.js", &status, &error);
 }
+
+
+/**
+ * Checks for gobject-introspection arguments. (--introspect-dump)
+ * If present, pass control to gobject-introspection (which will exit the program)
+ */
+void
+js_maybe_generate_gir_and_exit(int argc, char **argv) {
+    GOptionContext *ctx;
+    GError *error = NULL;
+
+    ctx = g_option_context_new (NULL);
+    // (g_irepository_get_option_group supplies a callback)
+    g_option_context_add_group (ctx, g_irepository_get_option_group ());
+
+    if (!g_option_context_parse (ctx, &argc, &argv, &error)) {
+        g_print ("Unexpected error: %s\n", error->message);
+        return 1;
+    }
+}
+
