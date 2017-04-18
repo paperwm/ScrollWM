@@ -20,5 +20,5 @@ js_init() {
     // Expose a "eval" dbus service
     GError *error = NULL;
     int status;
-    gjs_context_eval_file(js_context, "shellDBus.js", status, &error);
+    gjs_context_eval_file(js_context, "shellDBus.js", &status, &error);
 }

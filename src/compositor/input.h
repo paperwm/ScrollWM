@@ -1,3 +1,5 @@
+#ifndef INPUT_H
+#define INPUT_H
 
 extern void
 get_keymap(int *fd, int *size);
@@ -34,3 +36,5 @@ allocation_changed(ClutterActor          *actor,
                    ClutterActorBox       *box,
                    ClutterAllocationFlags flags,
                    gpointer               user_data);
+
+#endif /* INPUT_H */

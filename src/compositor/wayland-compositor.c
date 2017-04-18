@@ -22,7 +22,7 @@ struct wl_seat *seat;
 static struct modifier_state modifier_state;
 static char redraw_needed = 0;
 ClutterActor *stage = NULL;
-guint *new_window_signal;
+guint new_window_signal;
 
 static struct client
 *get_client (struct wl_client *_client) {
@@ -568,7 +568,7 @@ main (int argc, char **argv) {
     if(argc > 1) {
         GError *error = NULL;
         int status;
-        gjs_context_eval_file(js_context, argv[1], status, &error);
+        gjs_context_eval_file(js_context, argv[1], &status, &error);
     }
 
     g_main_loop_run (loop);

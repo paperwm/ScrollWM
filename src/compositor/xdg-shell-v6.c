@@ -80,7 +80,7 @@ zxdg_toplevel_set_minimized(struct wl_client *client,
                             struct wl_resource *resource) {
 }
 
-extern struct zxdg_toplevel_v6_interface zxdg_toplevel_v6_interface_impl = {
+struct zxdg_toplevel_v6_interface zxdg_toplevel_v6_interface_impl = {
     .destroy = zxdg_toplevel_destroy,
     .set_parent = zxdg_toplevel_set_parent,
     .set_title = zxdg_toplevel_set_title,
@@ -261,7 +261,7 @@ zxdg_positioner_set_offset(struct wl_client *client,
 
 }
 
-extern struct zxdg_positioner_v6_interface zxdg_positioner_v6_interface_impl = {
+struct zxdg_positioner_v6_interface zxdg_positioner_v6_interface_impl = {
     .destroy = zxdg_positioner_destroy,
     .set_size = zxdg_positioner_set_size,
     .set_anchor_rect = zxdg_positioner_set_anchor_rect,
@@ -514,12 +514,12 @@ zxdg_popup_grab(struct wl_client *client,
                 uint32_t serial) {
 }
 
-extern struct zxdg_popup_v6_interface zxdg_popup_v6_interface_impl = {
+struct zxdg_popup_v6_interface zxdg_popup_v6_interface_impl = {
     .destroy = zxdg_popup_destroy,
     .grab = zxdg_popup_grab
 };
 
-extern void
+void
 zxdg_shell_bind(struct wl_client *client,
                 void *data,
                 uint32_t version,

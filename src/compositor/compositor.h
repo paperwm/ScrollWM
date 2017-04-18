@@ -1,4 +1,6 @@
- 
+#ifndef COMPOSITOR_H
+#define COMPOSITOR_H
+
 #include <clutter/clutter.h>
 #include <clutter/wayland/clutter-wayland.h>
 #include <clutter/wayland/clutter-wayland-compositor.h>
@@ -12,6 +14,7 @@
 #include <wayland-server.h>
 #include "xdg-shell-unstable-v5-server-protocol.h"
 #include "xdg-shell-unstable-v6-server-protocol.h"
+#include "input.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -19,7 +22,7 @@
 
 extern struct wl_display *display;
 extern ClutterActor *stage;
-extern guint *new_window_signal;
+extern guint new_window_signal;
 
 struct surface {
     struct wl_resource *surface;
@@ -43,3 +46,5 @@ struct client {
 
 extern void xdg_bind_init();
 extern void xdg_v5_bind_init();
+
+#endif /* COMPOSITOR_H */
