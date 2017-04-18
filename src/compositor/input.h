@@ -37,4 +37,7 @@ allocation_changed(ClutterActor          *actor,
                    ClutterAllocationFlags flags,
                    gpointer               user_data);
 
+extern void
+setup_signals(struct surface *surface);
+
 #endif /* INPUT_H */

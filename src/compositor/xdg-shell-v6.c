@@ -469,13 +469,7 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
 
     surface->xdg_surface = res;
 
-    clutter_actor_set_reactive(surface->actor, TRUE);
-    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
-    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
-    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
-    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
-    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
-    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
+    setup_signals(surface);
 
     g_signal_emit(stage, new_window_signal, 0, surface->actor);
 

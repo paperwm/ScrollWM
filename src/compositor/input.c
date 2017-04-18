@@ -233,3 +233,17 @@ allocation_changed(ClutterActor          *actor,
         zxdg_toplevel_v6_send_configure(surface->xdg_toplevel_surface, (int) width, (int) height, &states);
     }
 }
+
+
+void
+setup_signals(struct surface *surface) {
+    if (surface->actor == NULL)
+        return;
+    clutter_actor_set_reactive(surface->actor, TRUE);
+    g_signal_connect(surface->actor, "enter-event", G_CALLBACK(enter_event), surface);
+    g_signal_connect(surface->actor, "leave-event", G_CALLBACK(leave_event), surface);
+    g_signal_connect(surface->actor, "key-press-event", G_CALLBACK(key_press_event), surface);
+    g_signal_connect(surface->actor, "key-release-event", G_CALLBACK(key_release_event), surface);
+    g_signal_connect(surface->actor, "key-focus-in", G_CALLBACK(key_focus_in), surface);
+    g_signal_connect(surface->actor, "key-focus-out", G_CALLBACK(key_focus_out), surface);
+}

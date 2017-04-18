@@ -14,7 +14,6 @@
 #include <wayland-server.h>
 #include "xdg-shell-unstable-v5-server-protocol.h"
 #include "xdg-shell-unstable-v6-server-protocol.h"
-#include "input.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>

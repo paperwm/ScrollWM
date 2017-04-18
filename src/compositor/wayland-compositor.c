@@ -1,6 +1,7 @@
 // gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
 
 #include "compositor.h"
+#include "input.h"
 #include "js.h"
 
 void info(int line, char *func, char *message) {
