@@ -127,10 +127,6 @@ enter_event(ClutterActor *actor,
         event_consumed = TRUE;
 
     }
-    if(client->keyboard) {
-        // stand in for proper focus handling
-        clutter_stage_set_key_focus(stage, actor);
-    }
     return event_consumed;
 }
 
@@ -149,10 +145,6 @@ leave_event(ClutterActor *actor,
         g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(button_press_event), surface);
         g_signal_handlers_disconnect_by_func(actor, G_CALLBACK(button_release_event), surface);
         event_consumed = TRUE;
-    }
-    if(client->keyboard) {
-        // stand in for proper focus handling
-        clutter_stage_set_key_focus(stage, NULL);
     }
     return event_consumed;
 }
