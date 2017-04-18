@@ -44,7 +44,7 @@ focus = (actor) => {
     decoration.set_background_color(cyan);
     overlap = 20;
     [width, height] = stage.get_size();
-    vertex = scroll.apply_relative_transform_to_point(stage, new Clutter.Vertex({
+    vertex = scroll.apply_transform_to_point(new Clutter.Vertex({
         x: decoration.x, y: decoration.y, z: 0}));
     print("absX: " + vertex.x);
     if (vertex.x <= 0) {
