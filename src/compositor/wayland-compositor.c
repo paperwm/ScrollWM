@@ -417,7 +417,7 @@ seat_bind(struct wl_client *client,
           uint32_t version,
           uint32_t id) {
     printf ("bind: seat\n");
-    struct wl_resource *seat = wl_resource_create (client, &wl_seat_interface, 1, id);
+    struct wl_resource *seat = wl_resource_create (client, &wl_seat_interface, 4, id);
     wl_resource_set_implementation (seat, &seat_interface, NULL, NULL);
     wl_seat_send_capabilities (seat, WL_SEAT_CAPABILITY_POINTER|WL_SEAT_CAPABILITY_KEYBOARD);
 }
@@ -527,7 +527,7 @@ main (int argc, char **argv) {
 
     wl_global_create(display, &wl_compositor_interface, 3, NULL, &compositor_bind);
     wl_global_create(display, &wl_shell_interface, 1, NULL, &shell_bind);
-    wl_global_create(display, &wl_seat_interface, 1, NULL, &seat_bind);
+    wl_global_create(display, &wl_seat_interface, 4, NULL, &seat_bind);
     wl_display_init_shm(display);
 
     xdg_bind_init();
