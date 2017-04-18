@@ -75,12 +75,20 @@ focus = (actor) => {
             x: decoration.x + decoration.width - scroll.width + overlap,
             y: decoration.y }));
     }
-}
+};
+
+focusWrapper = (actor) => {
+    focus(actor);
+};
 
 leave = (actor) => {
     let decoration = actor.get_parent();
     decoration.set_background_color(grey);
 }
+
+leaveWrapper = (actor) => {
+    leave(actor);
+};
 
 stage.connect("new-window", (stage, actor) => {
     print(actor.toString());
@@ -90,15 +98,10 @@ stage.connect("new-window", (stage, actor) => {
     decoration.add_child(actor);
     scroll.add_child(decoration);
     actor.set_size(500,700);
-    actor.connect("key-focus-in", focus)
-    actor.connect("key-focus-out", leave)
-    actor.connect("button-press-event", keyFocus);
+    actor.connect("key-focus-out", leaveWrapper)
+    actor.connect("button-press-event", focusWrapper);
 })
 //: 268
-
-keyFocus = (actor) => {
-    actor.grab_key_focus();
-}
 
 scroll.get_children().forEach((decoration)=> {
     let actor = decoration.get_children()[0];
