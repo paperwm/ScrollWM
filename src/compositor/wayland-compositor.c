@@ -566,9 +566,15 @@ main (int argc, char **argv) {
     js_init();
 
     if(argc > 1) {
-        GError *error = NULL;
-        int status;
-        gjs_context_eval_file(js_context, argv[1], &status, &error);
+        for(int i = 1; i < argc; i++) {
+            GError *error = NULL;
+            int status;
+            gjs_context_eval_file(js_context, argv[i], &status, &error);
+            if(!status && error != NULL) {
+                fprintf(stderr, "Error evaluating %s: %s\n", argv[i], error->message);
+                g_error_free(error);
+            }
+        }
     }
 
     g_main_loop_run (loop);
