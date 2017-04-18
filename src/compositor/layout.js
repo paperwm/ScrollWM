@@ -42,17 +42,18 @@ focus = (actor) => {
     actor.grab_key_focus();
     let decoration = actor.get_parent();
     decoration.set_background_color(cyan);
+    overlap = 20;
     [width, height] = stage.get_size();
     vertex = scroll.apply_relative_transform_to_point(stage, new Clutter.Vertex({
         x: decoration.x, y: decoration.y, z: 0}));
     print("absX: " + vertex.x);
     if (vertex.x <= 0) {
         print("scroll right");
-        scroll.scroll_to_point(new Clutter.Point({ x: decoration.x, y: decoration.y }));
+        scroll.scroll_to_point(new Clutter.Point({ x: decoration.x - overlap, y: decoration.y }));
     } else if (vertex.x + decoration.width > width ) {
         print("scroll left");
         scroll.scroll_to_point(new Clutter.Point({
-            x: decoration.x + decoration.width - width,
+            x: decoration.x + decoration.width - width + overlap,
             y: decoration.y }));
     }
 }
