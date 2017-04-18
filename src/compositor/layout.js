@@ -14,6 +14,16 @@ workspace.set_background_color(red)
 
 
 scroll = new Clutter.ScrollActor();
+scroll.set_easing_duration(250);
+stage.connect("activate", (stage) => {
+    workspace.width = stage.width;
+    workspace.height = stage.height;
+    scroll.set_position(10,10);
+    scroll.width = workspace.width - 20;
+    scroll.height = workspace.height - 20;
+})
+
+scroll.set_scroll_mode(Clutter.ScrollMode.HORIZONTALLY);
 
 workspace.add_child(scroll);
 
@@ -24,10 +34,7 @@ scroll.set_layout_manager(boxlayout);
 
 scroll.set_background_color(blue);
 
-workspace.width = stage.width;
-workspace.height = stage.height;
-scroll.width = workspace.width;
-scroll.height = workspace.height;
+
 
 margin = new Clutter.Margin({
     left: 4,
