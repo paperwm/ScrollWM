@@ -57,18 +57,22 @@ focus = (actor) => {
     actor.grab_key_focus();
     let decoration = actor.get_parent();
     decoration.set_background_color(cyan);
-    overlap = 20;
-    [width, height] = stage.get_size();
-    vertex = scroll.apply_transform_to_point(new Clutter.Vertex({
-        x: decoration.x, y: decoration.y, z: 0}));
-    print("absX: " + vertex.x);
-    if (vertex.x <= 0) {
-        print("scroll right");
-        scroll.scroll_to_point(new Clutter.Point({ x: decoration.x - overlap, y: decoration.y }));
-    } else if (vertex.x + decoration.width > width ) {
-        print("scroll left");
+    let overlap = 20;
+    if (decoration === scroll.get_first_child() ||
+        decoration === scroll.get_last_child()) {
+        overlap = 0;
+    }
+    let absPosition = decoration
+        .apply_relative_transform_to_point(scroll,
+                                           new Clutter.Vertex({x: 0, y: 0, z: 0}));
+    if (absPosition.x < 0) {
+        print("scroll left: " + (decoration.x));
+        scroll.scroll_to_point(new Clutter.Point({ x: decoration.x - overlap,
+                                                   y: decoration.y }));
+    } else if (absPosition.x + decoration.width + 20 > 0 + stage.width ) {
+        print("scroll right: " + (decoration.x + scroll.width));
         scroll.scroll_to_point(new Clutter.Point({
-            x: decoration.x + decoration.width - width + overlap,
+            x: decoration.x + decoration.width - scroll.width + overlap,
             y: decoration.y }));
     }
 }
