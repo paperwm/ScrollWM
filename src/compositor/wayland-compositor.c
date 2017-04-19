@@ -1,5 +1,3 @@
-// gcc -o wayland-compositor wayland-compositor.c backend-x11.c xdg-shell.c -lwayland-server -lX11 -lEGL -lGL -lX11-xcb -lxkbcommon-x11 -lxkbcommon
-
 #include "compositor.h"
 #include "input.h"
 #include "js.h"
@@ -540,11 +538,6 @@ main (int argc, char **argv) {
 
     xdg_bind_init();
     xdg_v5_bind_init();
-
-    // stage
-    // clutter
-    // gjs
-
 
     clutter_init(&argc, &argv);
 
