@@ -1,4 +1,5 @@
 Clutter = imports.gi.Clutter;
+GLib = imports.gi.GLib;
 
 stage = Clutter.Stage.get_default();
 
@@ -107,3 +108,7 @@ scroll.get_children().forEach((decoration)=> {
     let actor = decoration.get_children()[0];
     actor.set_size(300,700);
 })
+
+GLib.spawn_command_line_async("weston-terminal");
+// GLib.spawn_command_line_async("/home/hed/src/scrollwm/xdgtest");
+print("tried spawning terminal")

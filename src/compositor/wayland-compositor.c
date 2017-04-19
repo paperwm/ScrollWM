@@ -521,8 +521,9 @@ main (int argc, char **argv) {
     wl_list_init(&clients);
     wl_list_init(&surfaces);
     display = wl_display_create ();
-    /* clutter_wayland_set_compositor_display(display); */
-    clutter_set_windowing_backend("x11");
+    clutter_wayland_set_compositor_display(display);
+    clutter_set_windowing_backend("eglnative");
+    /* clutter_set_windowing_backend("x11"); */
 
     GSource *wayland_event_source;
 
@@ -540,6 +541,40 @@ main (int argc, char **argv) {
     xdg_v5_bind_init();
 
     clutter_init(&argc, &argv);
+
+     ClutterDeviceManager *device_manager =
+         clutter_device_manager_get_default();
+ 
+     GSList *devices =
+         clutter_device_manager_list_devices(device_manager);
+ 
+     ClutterInputDevice *input =
+         clutter_device_manager_get_core_device(device_manager, CLUTTER_POINTER_DEVICE);
+     ClutterInputDevice *keyboard =
+         clutter_device_manager_get_core_device(device_manager, CLUTTER_KEYBOARD_DEVICE);
+ 
+     struct wl_seat *pointer = clutter_wayland_input_device_get_wl_seat(input);
+     struct wl_seat *wl_keyboard = clutter_wayland_input_device_get_wl_seat(keyboard);
+ 
+     if(pointer == NULL)
+         printf("pointer is null\n");
+     if (wl_keyboard == NULL)
+         printf("wl_keyboard is null\n");
+ 
+     if (pointer == wl_keyboard) {
+         printf("pointer and keyboard on same seat\n");
+     } else {
+         printf("pointer and keyboard is not on the same seat\n");
+     }
+ 
+     guint length = g_list_length(devices);
+     printf("length: %d\n", length);
+     for (int i=0; i < length; i++) {
+         GSList *list = g_list_nth(devices, i);
+         ClutterInputDevice *device = list->data;
+         printf("device: %s\n", clutter_input_device_get_device_name(device));
+     }
+ 
 
     wl_display_add_socket_auto(display);
 

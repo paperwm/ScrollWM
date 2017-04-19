@@ -2,7 +2,7 @@
 
 CC = gcc
 
-PKGS = clutter-wayland-compositor-1.0 clutter-x11-1.0 clutter-cogl-1.0 gdk-pixbuf-2.0
+PKGS = clutter-wayland-compositor-1.0 clutter-egl-1.0 clutter-cogl-1.0 gdk-pixbuf-2.0
 PKGS += gjs-1.0 gobject-introspection-1.0 gmodule-2.0
 
 CFLAGS = $(shell pkg-config --cflags $(PKGS))

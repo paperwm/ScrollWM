@@ -467,6 +467,7 @@ zxdg_shell_get_xdg_surface_impl(struct wl_client *client,
                                     surface,
                                     NULL);
 
+    printf("get xdg surface\n");
     surface->xdg_surface = res;
 
     setup_signals(surface);
