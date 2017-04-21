@@ -1,5 +1,53 @@
 Clutter = imports.gi.Clutter;
 
+GObject = imports.gi.GObject;
+
+is_decoration = (actor) => {
+    if(!actor)
+        return false;
+    let children = actor.get_children();
+    if(children.length === 0)
+        return false;
+    return GObject.type_name(children[0]) === "ClutterWaylandSurface";
+}
+
+deep_clone = (actor) => {
+    let clone;
+    if(is_decoration(actor)) {
+        clone = new Clutter.Clone({source: actor});
+        clone.set_position(actor.x, actor.y);
+    } else {
+        // clone = new actor.constructor();
+        clone = new Clutter.Actor();
+        clone.set_position(actor.x, actor.y);
+        clone.set_size(actor.width, actor.height);
+
+        actor.get_children().forEach((child) => {
+            clone.add_child(deep_clone(child));
+        });
+    }
+
+    return clone;
+}
+
+create_minimap = (workspace) => {
+    let minimap = deep_clone(workspace);
+
+    let scale = 0.2;
+
+    minimap.set_size(scroll.width/scale, scroll.height/scale);
+    minimap.set_scale(scale, scale);
+
+    return minimap;
+}
+
+() => {
+    minimap = create_minimap(scroll)
+    stage.add_child(minimap)
+    minimap.destroy()
+}
+
+
 stage = Clutter.Stage.get_default();
 
 workspace = new Clutter.Actor();
