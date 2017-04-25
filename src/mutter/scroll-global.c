@@ -6,7 +6,7 @@
 struct _ScrollGlobal {
     GObject parent;
 
-    ClutterStage *stage;
+    ClutterActor *stage;
 };
 
 G_DEFINE_TYPE(ScrollGlobal, scroll_global, G_TYPE_OBJECT)

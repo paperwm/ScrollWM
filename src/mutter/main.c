@@ -33,6 +33,9 @@
 #include <meta/meta-plugin.h>
 #include <meta/util.h>
 
+
+#include "js.h"
+
 ClutterActor *stage;
 ClutterActor *scroll;
 
@@ -435,6 +438,10 @@ MetaPluginInfo *scroll_shell_plugin_plugin_info (MetaPlugin *plugin)
 void
 main(int argc, char *argv[]) {
   GError *error = NULL;
+
+  js_maybe_generate_gir_and_exit(argc, argv);
+
+  js_init();
 
   meta_plugin_manager_set_plugin_type (scroll_shell_plugin_get_type ());
   GOptionContext *ctx = meta_get_option_context ();

@@ -11,6 +11,8 @@ stdenv.mkDerivation rec {
 
   src = ./.;
 
+  MUTTER_GI_PATH="${gnome3.mutter}/lib/mutter";
+
   preConfigure = ''
   shell_dir=${wayland-protocols}/share/wayland-protocols/unstable/xdg-shell
   ${wayland}/bin/wayland-scanner server-header < $shell_dir/xdg-shell-unstable-v5.xml \
