@@ -33,6 +33,7 @@
 #include <meta/meta-plugin.h>
 #include <meta/util.h>
 
+#include "shell-global.h"
 
 #include "js.h"
 
@@ -198,6 +199,14 @@ scroll_shell_plugin_has_swap_event (ScrollShellPlugin *shell_plugin)
   return strstr (glx_extensions, "GLX_INTEL_swap_event") != NULL;
 }
 
+
+
+static ShellWM *
+get_shell_wm (void)
+{
+    return shell_global_get_shell_wm(shell_global_get());
+}
+
 static void
 scroll_shell_plugin_start (MetaPlugin *plugin)
 {
@@ -206,6 +215,8 @@ scroll_shell_plugin_start (MetaPlugin *plugin)
   int status;
   GjsContext *gjs_context;
   ClutterBackend *backend;
+
+  _shell_global_set_plugin(plugin);
 
   backend = clutter_get_default_backend ();
   shell_plugin->cogl_context = clutter_backend_get_cogl_context (backend);
@@ -274,18 +285,25 @@ static void
 scroll_shell_plugin_minimize (MetaPlugin         *plugin,
 			     MetaWindowActor    *actor)
 {
+  _shell_wm_minimize (get_shell_wm (),
+                      actor);
+
 }
 
 static void
 scroll_shell_plugin_unminimize (MetaPlugin         *plugin,
                                MetaWindowActor    *actor)
 {
+  _shell_wm_unminimize (get_shell_wm (),
+                      actor);
+
 }
 
 static void
 scroll_shell_plugin_size_changed (MetaPlugin         *plugin,
                                  MetaWindowActor    *actor)
 {
+  _shell_wm_size_changed (get_shell_wm (), actor);
 }
 
 static void
@@ -295,35 +313,23 @@ scroll_shell_plugin_size_change (MetaPlugin         *plugin,
                                 MetaRectangle      *old_frame_rect,
                                 MetaRectangle      *old_buffer_rect)
 {
-}
-
-
-static void
-focus(gpointer data) {
-  ClutterActor *actor = data;
-  clutter_actor_grab_key_focus(actor);
+  _shell_wm_size_change (get_shell_wm (), actor, which_change, old_frame_rect, old_buffer_rect);
 }
 
 static void
 scroll_shell_plugin_map (MetaPlugin         *plugin,
                         MetaWindowActor    *actor)
 {
-  /* clutter_actor_add_child(stage, (ClutterActor*) actor); */
-  clutter_actor_show(actor);
-  /* clutter_actor_set_position(actor, -1000, 0); */
-
-  /* clutter_actor_remove_child(stage, actor); */
-  /* clutter_actor_add_child(scroll, actor); */
-
-
-  /* g_timeout_add_seconds(1, focus, actor); */
-
+  _shell_wm_map (get_shell_wm (),
+                 actor);
 }
 
 static void
 scroll_shell_plugin_destroy (MetaPlugin         *plugin,
                             MetaWindowActor    *actor)
 {
+  _shell_wm_destroy (get_shell_wm (),
+                     actor);
 }
 
 static void
@@ -332,17 +338,20 @@ scroll_shell_plugin_switch_workspace (MetaPlugin         *plugin,
                                      gint                to,
                                      MetaMotionDirection direction)
 {
+  _shell_wm_switch_workspace (get_shell_wm(), from, to, direction);
 }
 
 static void
 scroll_shell_plugin_kill_window_effects (MetaPlugin         *plugin,
                                         MetaWindowActor    *actor)
 {
+  _shell_wm_kill_window_effects (get_shell_wm(), actor);
 }
 
 static void
 scroll_shell_plugin_kill_switch_workspace (MetaPlugin         *plugin)
 {
+  _shell_wm_kill_switch_workspace (get_shell_wm());
 }
 
 static void
@@ -351,11 +360,13 @@ scroll_shell_plugin_show_tile_preview (MetaPlugin      *plugin,
                                       MetaRectangle   *tile_rect,
                                       int              tile_monitor)
 {
+  _shell_wm_show_tile_preview (get_shell_wm (), window, tile_rect, tile_monitor);
 }
 
 static void
 scroll_shell_plugin_hide_tile_preview (MetaPlugin *plugin)
 {
+  _shell_wm_hide_tile_preview (get_shell_wm ());
 }
 
 static void
@@ -365,6 +376,7 @@ scroll_shell_plugin_show_window_menu (MetaPlugin         *plugin,
                                      int                 x,
                                      int                 y)
 {
+  _shell_wm_show_window_menu (get_shell_wm (), window, menu, x, y);
 }
 
 static void
@@ -373,6 +385,7 @@ scroll_shell_plugin_show_window_menu_for_rect (MetaPlugin         *plugin,
                                               MetaWindowMenuType  menu,
                                               MetaRectangle      *rect)
 {
+  _shell_wm_show_window_menu_for_rect (get_shell_wm (), window, menu, rect);
 }
 
 static gboolean

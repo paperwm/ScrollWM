@@ -6,6 +6,9 @@
 struct _ShellGlobal {
     GObject parent;
 
+    MetaScreen *screen;
+    MetaPlugin *plugin;
+    ShellWM *wm;
     ClutterActor *stage;
 };
 
@@ -40,6 +43,27 @@ shell_global_get_stage (ShellGlobal  *global)
     return global->stage;
 }
 
+
+/**
+ * shell_global_get_plugin:
+ *
+ * Return value: (transfer none):
+ */
+MetaPlugin *
+shell_global_get_plugin(ShellGlobal *global) {
+    return global->plugin;
+}
+
+/**
+ * shell_global_get_shell_wm:
+ *
+ * Return value: (transfer none):
+ */
+ShellWM *
+shell_global_get_shell_wm(ShellGlobal *global) {
+    return global->wm;
+}
+
 static void
 shell_global_class_init (ShellGlobalClass *klass) {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -47,6 +71,14 @@ shell_global_class_init (ShellGlobalClass *klass) {
 
 static void
 shell_global_init(ShellGlobal *self) {
-    self->stage = stage;
+}
+
+void
+_shell_global_set_plugin(MetaPlugin *shell_plugin) {
+    ShellGlobal *global = shell_global_get();
+    global->wm = shell_wm_new(shell_plugin);
+    global->plugin = shell_plugin;
+    global->screen = meta_plugin_get_screen(shell_plugin);
+    global->stage = meta_get_stage_for_screen(global->screen);
 }
 
