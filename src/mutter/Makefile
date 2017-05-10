@@ -31,12 +31,13 @@ wayland-compositor: $(OBJS)
 
 # We should probably use autotools for the gir/typelib stuff..
 # https://wiki.gnome.org/Projects/GObjectIntrospection/AutotoolsIntegration
-Shell-0.1.gir: shell-global.c | wayland-compositor
-	g-ir-scanner shell-global.[ch]  \
+Shell-0.1.gir: shell-global.c shell-wm.c | wayland-compositor
+	g-ir-scanner shell-global.[ch] shell-wm.[ch] \
 	         --program=./wayland-compositor \
 	         `pkg-config --cflags gobject-introspection-1.0` \
 	         --include=GObject-2.0 \
 	         --include=Clutter-1.0 \
+	         --include=Meta-3.0 \
 	         --add-include-path=$(MUTTER_GI_PATH) \
 	         --namespace=Shell \
 	         --nsversion=0.1 \
