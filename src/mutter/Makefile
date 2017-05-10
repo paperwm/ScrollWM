@@ -31,21 +31,21 @@ wayland-compositor: $(OBJS)
 
 # We should probably use autotools for the gir/typelib stuff..
 # https://wiki.gnome.org/Projects/GObjectIntrospection/AutotoolsIntegration
-Scroll-0.1.gir: scroll-global.c | wayland-compositor
-	g-ir-scanner scroll-global.[ch] \
+Shell-0.1.gir: shell-global.c | wayland-compositor
+	g-ir-scanner shell-global.[ch]  \
 	         --program=./wayland-compositor \
 	         `pkg-config --cflags gobject-introspection-1.0` \
 	         --include=GObject-2.0 \
 	         --include=Clutter-1.0 \
 	         --add-include-path=$(MUTTER_GI_PATH) \
-	         --namespace=Scroll \
+	         --namespace=Shell \
 	         --nsversion=0.1 \
-	         --output=Scroll-0.1.gir \
+	         --output=Shell-0.1.gir \
 	         --warn-all
 %.typelib: %.gir
 	g-ir-compiler --includedir $(MUTTER_GI_PATH) $< -o $@
 
-all: wayland-compositor Scroll-0.1.typelib
+all: wayland-compositor Shell-0.1.typelib
 
 clean: 
 	rm -f build/*.o
