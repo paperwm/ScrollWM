@@ -1,4 +1,4 @@
-with import ~/nixpkgs {};
+with import <nixpkgs> {};
 
 let
   # Clutter with proper wayland support
@@ -12,19 +12,6 @@ stdenv.mkDerivation rec {
   src = ./.;
 
   MUTTER_GI_PATH="${gnome3.mutter}/lib/mutter";
-
-  preConfigure = ''
-  shell_dir=${wayland-protocols}/share/wayland-protocols/unstable/xdg-shell
-  ${wayland}/bin/wayland-scanner server-header < $shell_dir/xdg-shell-unstable-v5.xml \
-    > xdg-shell-unstable-v5-server-protocol.h
-  ${wayland}/bin/wayland-scanner code < $shell_dir/xdg-shell-unstable-v5.xml \
-    > xdg-shell-unstable-v5-server-protocol.c
-
-  ${wayland}/bin/wayland-scanner server-header < $shell_dir/xdg-shell-unstable-v6.xml \
-    > xdg-shell-unstable-v6-server-protocol.h
-  ${wayland}/bin/wayland-scanner code < $shell_dir/xdg-shell-unstable-v6.xml \
-    > xdg-shell-unstable-v6-server-protocol.c
-  '';
 
   buildInputs =
     with xorg; [ libX11 mesa libXext libXfixes libXdamage libXcomposite libXi ] ++
