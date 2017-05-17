@@ -40,6 +40,9 @@
 ClutterActor *stage;
 ClutterActor *scroll;
 
+static char **startup_js_scripts = NULL;
+static int startup_js_script_count = 0;
+
 static void scroll_shell_plugin_start            (MetaPlugin          *plugin);
 static void scroll_shell_plugin_minimize         (MetaPlugin          *plugin,
                                                   MetaWindowActor     *actor);
@@ -231,6 +234,30 @@ scroll_shell_plugin_start (MetaPlugin *plugin)
   clutter_actor_set_layout_manager(scroll, layout);
   clutter_actor_show(stage);
   clutter_actor_add_child(stage, scroll);
+
+  if(startup_js_script_count > 0) {
+      for(int i = 0; i < startup_js_script_count; i++) {
+          GError *error = NULL;
+
+          // This seems to be a value "returned" from the script
+          // E.g. if the last line in the script contains say 10, the status
+          // will be 10
+          int exit_status;
+
+          const char *script_file = startup_js_scripts[i];
+
+          gboolean result = gjs_context_eval_file(js_context, script_file, &exit_status, &error);
+          if(!result) {
+              fprintf(stderr, "Error evaluating %s: ", script_file);
+              if(error != NULL) {
+                  fprintf(stderr, "%s", error->message);
+                  g_error_free(error);
+              }
+              fprintf(stderr, "\n");
+          }
+      }
+  }
+
   /* shell_perf_log_define_event (shell_perf_log_get_default (), */
   /*                              "glx.swapComplete", */
   /*                              "GL buffer swap complete event received (with timestamp of completion)", */
@@ -459,7 +486,19 @@ main(int argc, char *argv[]) {
   meta_plugin_manager_set_plugin_type (scroll_shell_plugin_get_type ());
   GOptionContext *ctx = meta_get_option_context ();
   g_option_context_parse(ctx, &argc, &argv, &error);
+
+  // Rest of arguments is javascript files to be evaluated on startup
+  startup_js_script_count = argc - 1; // Correct for argv[0]
+  if(argc > 1) {
+      startup_js_scripts = &argv[1];
+  }
+
+  // Mutter change the current directory to $HOME which is just annoying - at
+  // least during development
+  gchar *cwd = g_get_current_dir();
   meta_init();
+  chdir(cwd);
+  g_free(cwd);
 
   meta_run();
 }

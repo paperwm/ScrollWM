@@ -43,7 +43,6 @@ js_maybe_generate_gir_and_exit(int argc, char **argv) {
 
     if (!g_option_context_parse (ctx, &argc, &argv, &error)) {
         g_print ("Unexpected error: %s\n", error->message);
-        return 1;
     }
 }
 
