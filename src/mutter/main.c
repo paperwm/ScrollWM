@@ -451,8 +451,9 @@ scroll_shell_plugin_xevent_filter (MetaPlugin *plugin,
 
 static gboolean
 scroll_shell_plugin_keybinding_filter (MetaPlugin     *plugin,
-                                      MetaKeyBinding *binding)
+                                       MetaKeyBinding *binding)
 {
+    return _shell_wm_filter_keybinding (get_shell_wm(), binding);
 }
 
 static void
