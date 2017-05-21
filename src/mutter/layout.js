@@ -15,6 +15,12 @@ wm = global.get_shell_wm()
 focus = display.focus_window
 //: [object instance proxy GType:MetaWindowWayland jsobj@0x7ff315474760 native@0xabe500]
 
+
+decoration_of = (meta_window) => {
+    let window_actor = meta_window.get_compositor_private()
+    return window_actor && window_actor.get_parent()
+}
+
 next = () => {
     let focus = display.focus_window;
     let actor = focus.get_compositor_private();
@@ -138,6 +144,10 @@ red = Clutter.Color.from_string("red")[1];
 grey = Clutter.Color.from_string("grey")[1];
 cyan = Clutter.Color.from_string("cyan")[1];
 blue = Clutter.Color.from_string("blue")[1];
+
+decoration_active_color = cyan;
+decoration_inactive_color = grey;
+
 workspace.set_background_color(red)
 
 
@@ -196,7 +206,6 @@ focus = (win, data) => {
 
     }
     let decoration = actor.get_parent();
-    decoration.set_background_color(cyan);
     let overlap = 20;
     if (decoration === scroll.get_first_child() ||
         decoration === scroll.get_last_child()) {
@@ -230,6 +239,23 @@ leaveWrapper = (actor) => {
     leave(actor);
 };
 
+update_decoration_handler = (meta_window, prop_spec) => {
+    // prop_spec is just the appears-focused propery spec
+    let new_color;
+
+    if(meta_window.appears_focused) {
+        new_color = decoration_active_color; 
+    } else {
+        new_color = decoration_inactive_color;
+    }
+
+    decoration_of(meta_window).set_background_color(new_color);
+}
+
+update_decoration_handler_wrapper = () => {
+    update_decoration_handler.apply(null, arguments);
+}
+
 group = stage.first_child;
 mapWindow = (wm, actor) => {
     print("map: " + actor.toString());
@@ -244,7 +270,11 @@ mapWindow = (wm, actor) => {
     decoration.add_child(actor);
     scroll.add_child(decoration);
     actor.meta_window.move_resize_frame(false, 0, 0, 500, 700)
+
     actor.meta_window.connect("focus", focusWrapper)
+    actor.meta_window.connect("notify::appears-focused",
+                              update_decoration_handler_wrapper); 
+
     actor.first_child.first_child.connect("button-press-event", focusWrapper);
     decoration.show();
     actor.show();
