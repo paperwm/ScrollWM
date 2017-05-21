@@ -232,7 +232,11 @@ leaveWrapper = (actor) => {
 
 group = stage.first_child;
 mapWindow = (wm, actor) => {
-    print(actor.toString());
+    print("map: " + actor.toString());
+    if (group !== actor.get_parent()) {
+        print("parent: " + actor.get_parent());
+        return;
+    }
     group.remove_child(actor);
     let decoration = new Clutter.Actor();
     decoration.set_background_color(grey);
