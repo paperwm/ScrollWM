@@ -8,6 +8,9 @@ wm.connect("map", (wm, actor) => {
 })
 
 wm.connect("destroy", (wm, actor) => {
+    actor.connect("destroy", (actor) => {
+        actor.get_parent().destroy();
+    })
     wm.completed_destroy(actor);
 })
 
